@@ -10,6 +10,10 @@ export type PathogenId =
   | 'potato_late_blight' 
   | 'tomato_early_blight' 
   | 'corn_rust' 
+  | 'soybean_rust'
+  | 'soybean_frogeye'
+  | 'corn_northern_blight'
+  | 'wheat_rust'
   | 'powdery_mildew' 
   | 'healthy';
 
