@@ -188,6 +188,15 @@ async function runTestSuite() {
   });
   assert(rxWheat.chemicalName.includes("Tilt"), "Tilt formulated for Wheat Rust");
 
+  const rxAppleScab = calculatePrescription({
+    pathogenId: "apple_scab",
+    acreage: 80,
+    windSpeedMph: 5.0,
+    relativeHumidity: 85,
+  });
+  assert(rxAppleScab.chemicalName.includes("Captan"), "Captan 80 WDG formulated for Apple Scab");
+  assert(rxAppleScab.epaRegNumber === "EPA Reg. #66222-65", "Verified Captan EPA Reg Number #66222-65");
+
   // --------------------------------------------------------------------------
   // TEST SUITE 4: Microclimate Weather & Wallin Index Model
   // --------------------------------------------------------------------------

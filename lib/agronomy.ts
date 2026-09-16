@@ -111,6 +111,30 @@ export const AGRONOMIC_FORMULARY: Record<PathogenId, PathogenChemicalRecipe> = {
     cropValuePerAcreUsd: 620,
     typicalLossRatePct: 0.28,
   },
+  apple_scab: {
+    chemicalName: "Captan 80 WDG",
+    epaRegNumber: "EPA Reg. #66222-65",
+    activeIngredient: "Captan (80.0% w/w)",
+    ratePerAcreValue: 2.5,
+    rateUnit: "lb",
+    rateDescription: "2.5 lb / acre",
+    waterGalPerAcre: 50,
+    unitCostUsd: 7.40, // ~$18.50 / acre
+    cropValuePerAcreUsd: 5400,
+    typicalLossRatePct: 0.30,
+  },
+  apple_rust: {
+    chemicalName: "Inspire Super (Difenoconazole + Cyprodinil)",
+    epaRegNumber: "EPA Reg. #100-1317",
+    activeIngredient: "Difenoconazole (8.4%) + Cyprodinil (24.1%)",
+    ratePerAcreValue: 12.0,
+    rateUnit: "fl_oz",
+    rateDescription: "12.0 fl oz / acre",
+    waterGalPerAcre: 50,
+    unitCostUsd: 1.85, // ~$22.20 / acre
+    cropValuePerAcreUsd: 5400,
+    typicalLossRatePct: 0.28,
+  },
   powdery_mildew: {
     chemicalName: "Myclobutanil 20EW (Rally)",
     epaRegNumber: "EPA Reg. #62719-410",

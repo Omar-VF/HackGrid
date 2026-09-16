@@ -14,6 +14,8 @@ export type PathogenId =
   | 'soybean_frogeye'
   | 'corn_northern_blight'
   | 'wheat_rust'
+  | 'apple_scab'
+  | 'apple_rust'
   | 'powdery_mildew' 
   | 'healthy';
 
