@@ -73,10 +73,20 @@ export default function TelemetryBar({
             </span>
           </div>
 
-          {/* Severe Spore Velocity Badge */}
-          <div className="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-bold tracking-wide text-amber-800 shadow-2xs">
-            [ SEVERE SPORE VELOCITY ]
-          </div>
+          {/* Dynamic Spore Velocity Risk Badge */}
+          {weather.sporeSpreadRisk === 'SEVERE' ? (
+            <div className="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-bold tracking-wide text-amber-800 shadow-2xs">
+              [ SEVERE SPORE VELOCITY ]
+            </div>
+          ) : weather.sporeSpreadRisk === 'ELEVATED' ? (
+            <div className="rounded-md border border-yellow-300 bg-yellow-50 px-2.5 py-1 text-[11px] font-bold tracking-wide text-yellow-800 shadow-2xs">
+              [ ELEVATED SPORE RISK ]
+            </div>
+          ) : (
+            <div className="rounded-md border border-agri-300 bg-agri-50 px-2.5 py-1 text-[11px] font-bold tracking-wide text-agri-800 shadow-2xs">
+              [ LOW SPORE VELOCITY ]
+            </div>
+          )}
 
           {/* Autonomous Agent Status */}
           <div className="flex items-center gap-1.5 rounded-md border border-agri-200 bg-agri-50 px-2.5 py-1 text-[11px] font-bold text-agri-800">

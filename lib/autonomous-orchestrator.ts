@@ -125,7 +125,9 @@ export async function executeAutonomousWorkflow(
     if (stepDelayMs > 0) await sleep(stepDelayMs);
 
     let diagnostic: DiagnosticResult;
-    if (request.sampleId && request.sampleId in SAMPLE_DIAGNOSTICS) {
+    if (request.customImageData) {
+      diagnostic = await analyzeImageFile(request.customImageData);
+    } else if (request.sampleId && request.sampleId in SAMPLE_DIAGNOSTICS) {
       diagnostic = SAMPLE_DIAGNOSTICS[request.sampleId];
     } else {
       diagnostic = await analyzeImageFile(imageSource);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   WorkOrderTicket,
   PathogenId,
@@ -11,6 +11,7 @@ import {
   INITIAL_PIPELINE_STAGES,
   SAMPLE_DIAGNOSTICS,
   executeAutonomousWorkflow,
+  getLiveWeather,
 } from '@/lib';
 import TelemetryBar from '@/components/TelemetryBar';
 import AutonomousPipeline from '@/components/AutonomousPipeline';
@@ -28,6 +29,20 @@ export default function DashboardPage() {
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [cycleTime, setCycleTime] = useState<string>('2.4S');
+
+  // Fetch live Open-Meteo microclimate telemetry on mount
+  useEffect(() => {
+    getLiveWeather()
+      .then((liveWeather) => {
+        setTicket((prev) => ({
+          ...prev,
+          weather: liveWeather,
+        }));
+      })
+      .catch((err) => {
+        console.warn('Initial live weather fetch notice:', err);
+      });
+  }, []);
 
   const runAutonomousScan = async (sampleId: PathogenId, customData?: string) => {
     if (isRunning) return;
