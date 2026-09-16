@@ -30,7 +30,8 @@ If you or your teammates are using AI coding agents (Antigravity, Cursor, Copilo
   - Full product vision, quantified problem statements, and target user personas.
   - Complete 5-stage autonomous execution pipeline breakdown.
   - Screen-by-screen UX specifications and tech stack rationale.
-  - Implementation feasibility, hackathon MVP scope boundaries, and scalability roadmap.
+- ⚡ **[Workstream Division Plan (Difficult vs. Easygoing)](file:///d:/Projects/HackGrid/docs/WORKSTREAM_DIVISION_PLAN.md)**:
+  - Split engineering tasks into Section A (Core Engine/CV/Autonomous) and Section B (UI/Dashboard/Landing Page) with shared TypeScript contracts.
 - 📄 **[Official HackGrid Business Document](file:///d:/Projects/HackGrid/docs/BUSINESS_DOCUMENT.md)**:
   - Mandatory 7-section judging deliverable (*Business Idea, Problem Statement, Market Gap, Target Customer, PMF, Business Model & Monetization, Competitive Landscape*).
 - 🛠️ **[Developer & Team Onboarding Guide](file:///d:/Projects/HackGrid/docs/DEVELOPER_GUIDE.md)**:
