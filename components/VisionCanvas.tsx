@@ -126,7 +126,9 @@ export default function VisionCanvas({
             >
               {/* Bounding Box Badge */}
               <div
-                className={`absolute -top-6 left-0 flex items-center gap-1 ${bgColor} px-2 py-0.5 text-[10px] font-mono font-bold tracking-tight text-white shadow-md rounded-xs whitespace-nowrap`}
+                className={`absolute ${
+                  box.ymin < 12 ? "top-1 left-1" : "-top-6 left-0"
+                } flex items-center gap-1 ${bgColor} px-2 py-0.5 text-[10px] font-mono font-bold tracking-tight text-white shadow-md rounded-xs whitespace-nowrap`}
               >
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-white animate-ping" />
                 <span>{box.label}</span>

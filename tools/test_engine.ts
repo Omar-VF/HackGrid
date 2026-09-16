@@ -162,6 +162,32 @@ async function runTestSuite() {
   assert(roi.estimatedCropSavedUsd >= 30000, `Yield preservation calculated ($${roi.estimatedCropSavedUsd})`);
   assert(roi.chemicalSavingsPct === 34, "Precision spray yields 34% chemical input savings");
 
+  // Test Case E: Multi-pathogen recipes
+  const rxSoybean = calculatePrescription({
+    pathogenId: "soybean_rust",
+    acreage: 200,
+    windSpeedMph: 5.5,
+    relativeHumidity: 82,
+  });
+  assert(rxSoybean.chemicalName.includes("Priaxor"), "Priaxor formulated for Asian Soybean Rust");
+  assert(rxSoybean.epaRegNumber === "EPA Reg. #7969-311", "Verified Priaxor EPA Reg Number #7969-311");
+
+  const rxCornNorthern = calculatePrescription({
+    pathogenId: "corn_northern_blight",
+    acreage: 180,
+    windSpeedMph: 4.0,
+    relativeHumidity: 75,
+  });
+  assert(rxCornNorthern.chemicalName.includes("Headline AMP"), "Headline AMP formulated for Northern Corn Leaf Blight");
+
+  const rxWheat = calculatePrescription({
+    pathogenId: "wheat_rust",
+    acreage: 300,
+    windSpeedMph: 6.0,
+    relativeHumidity: 70,
+  });
+  assert(rxWheat.chemicalName.includes("Tilt"), "Tilt formulated for Wheat Rust");
+
   // --------------------------------------------------------------------------
   // TEST SUITE 4: Microclimate Weather & Wallin Index Model
   // --------------------------------------------------------------------------
