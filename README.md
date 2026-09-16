@@ -1,4 +1,4 @@
-# CropScan AI Sentinel 🌾👁️⚡
+# CropEye 🌾👁️⚡
 
 An autonomous computer vision crop pathology and precision spray defense SaaS engineered for commercial family farms (**Small Businesses**) within the **HackGrid** auction constraints.
 

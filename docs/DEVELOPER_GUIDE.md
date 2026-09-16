@@ -1,6 +1,6 @@
-# CropScan AI Sentinel: Developer & Team Onboarding Guide
+# CropEye: Developer & Team Onboarding Guide
 
-A quickstart and architecture handbook for human developers and agents building **CropScan AI Sentinel**.
+A quickstart and architecture handbook for human developers and agents building **CropEye**.
 
 ---
 
@@ -136,7 +136,7 @@ Our team (CopyPasta) is competing in HackGrid, a strict constraint-based hackath
 - Customer Segment: 🚜 Small Businesses (Commercial Family Farms: 500–5,000 acres, $349–$599/mo B2B SaaS. Never target hobby gardeners).
 
 Please read the documents and confirm your understanding by providing a concise summary of:
-1. The core product ("CropScan AI Sentinel") and the specific problem it solves for commercial farms.
+1. The core product ("CropEye") and the specific problem it solves for commercial farms.
 2. The 5-Stage Autonomous Execution Pipeline.
 3. What is strictly forbidden under our won constraints.
 

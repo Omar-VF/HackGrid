@@ -20,7 +20,7 @@ export default function Navbar({ currentRoute = 'landing' }: NavbarProps) {
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-lg font-bold tracking-tight text-slate-900">
-                CropScan <span className="text-agri-600 font-semibold">AI Sentinel</span>
+                Crop<span className="text-agri-600 font-semibold">Eye</span>
               </span>
             </div>
           </Link>

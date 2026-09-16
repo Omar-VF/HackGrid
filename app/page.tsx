@@ -468,7 +468,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-4 text-xs font-mono">
-            <span className="text-slate-300 font-bold">1-800-CROPSCAN-OPS</span>
+            <span className="text-slate-300 font-bold">1-800-CROPEYE-OPS</span>
             <Link
               href="/dashboard"
               className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs text-slate-200 hover:bg-slate-700 transition"
@@ -482,8 +482,8 @@ export default function HomePage() {
       {/* Standard Footer */}
       <footer className="w-full border-t border-slate-200 bg-white py-6 px-4 text-center text-xs text-slate-500 font-mono">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-2">
-          <span>CropScan AI Sentinel v4.2.0-COMMERCIAL</span>
-          <span>© 2024 CropScan AI Systems Inc. All agronomic protocols certified.</span>
+          <span>CropEye v4.2.0-COMMERCIAL</span>
+          <span>© 2024 CropEye Systems Inc. All agronomic protocols certified.</span>
           <span className="text-agri-700 font-bold">TELEMETRY LINK ACTIVE</span>
         </div>
       </footer>

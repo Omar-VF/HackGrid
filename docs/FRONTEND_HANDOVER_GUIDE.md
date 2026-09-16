@@ -1,4 +1,4 @@
-# Frontend Developer Handover Guide: CropScan AI Sentinel
+# Frontend Developer Handover Guide: CropEye
 
 > **For Frontend Dev (Workstream B)**:  
 > The entire backend engine, live weather API, deterministic agronomy formulations, computer vision math, and autonomous 5-stage orchestrator are **100% complete, tested, and passing all 67 unit tests** (`npm run test:engine`).
@@ -88,7 +88,7 @@ Reference: [`design/page1.pdf`](file:///d:/Projects/HackGrid/design/page1.pdf)
 Reference: [`design/page2.pdf`](file:///d:/Projects/HackGrid/design/page2.pdf)
 
 #### 1. Header & Telemetry Bar:
-- Left: `CropScan AI Sentinel CAB V4.2` with green leaf icon, `Oak Ridge Commercial Farm • 1,850 Total Acres`.
+- Left: `CropEye CAB V4.2` with green leaf icon, `Oak Ridge Commercial Farm • 1,850 Total Acres`.
 - Right: `Active Sector: 4B (140 Acres Russet Potatoes)`.
 - Weather Badge: Live temp, humidity, wind, and spore status:
   `19.4°C | 88% Humidity | Wind: 6.2 mph NW [ SEVERE SPORE VELOCITY ] [ ● AGENT ACTIVE ]`

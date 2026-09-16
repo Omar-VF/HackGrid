@@ -1,4 +1,4 @@
-# HackGrid Project Business Document: CropScan AI
+# HackGrid Project Business Document: CropEye
 
 *A high-impact Precision Agriculture SaaS platform adhering strictly to HackGrid Auction Constraints.*
 
@@ -16,9 +16,9 @@
 
 ## 1. Business Idea
 
-**CropScan AI** is an intelligent visual crop pathology and precision treatment platform. 
+**CropEye** is an intelligent visual crop pathology and precision treatment platform. 
 
-By uploading smartphone photos or drone aerial imagery of crops, farmers and agronomists receive instant computer-vision diagnostic triage: exact disease pathogen identification (e.g. Late Blight, Powdery Mildew, Rust), visual bounding boxes highlighting infected leaf tissue, necrosis severity percentage, and a deterministic prescriptive chemical treatment plan. CropScan AI bridges the gap between field scouting and actionable agronomic defense before crop loss becomes irreversible.
+By uploading smartphone photos or drone aerial imagery of crops, farmers and agronomists receive instant computer-vision diagnostic triage: exact disease pathogen identification (e.g. Late Blight, Powdery Mildew, Rust), visual bounding boxes highlighting infected leaf tissue, necrosis severity percentage, and a deterministic prescriptive chemical treatment plan. CropEye bridges the gap between field scouting and actionable agronomic defense before crop loss becomes irreversible.
 
 ---
 
@@ -38,7 +38,7 @@ Existing agricultural solutions suffer from significant shortcomings:
 2. **Generic Satellite NDVI**: Macro-satellite vegetation indices (e.g. Sentinel-2) only show general greenness at 10m resolution—they can tell that a crop is stressed, but **cannot diagnose whether it is caused by fungal blight, nitrogen deficiency, or spider mites**.
 3. **Hardware-Locked OEM Systems (John Deere / Trimble)**: Proprietary smart-sprayer rigs cost upwards of $250,000 to replace existing farm machinery, locking out 85% of small and mid-sized commercial growers.
 
-**CropScan AI’s White Space**: A hardware-agnostic, smartphone-and-drone computer vision platform delivering **sub-millimeter leaf pathology diagnostics in under 2 seconds** on existing farm hardware.
+**CropEye’s White Space**: A hardware-agnostic, smartphone-and-drone computer vision platform delivering **sub-millimeter leaf pathology diagnostics in under 2 seconds** on existing farm hardware.
 
 ---
 
@@ -54,7 +54,7 @@ Existing agricultural solutions suffer from significant shortcomings:
 
 ## 5. Product-Market Fit (PMF)
 
-### Why Commercial Family Farms Adopt CropScan AI
+### Why Commercial Family Farms Adopt CropEye
 1. **Immediate 10x Financial ROI**:
    - **Crop Salvage Value**: Early detection of late blight in high-value potato crops saves an average of **$480 to $750 per acre** in prevented crop destruction.
    - **Chemical Input Reduction**: Targeted micro-spraying reduces overall chemical pesticide usage by **34%**, saving mid-sized farms **$18,000–$42,000 annually** in chemical costs.
@@ -66,7 +66,7 @@ Existing agricultural solutions suffer from significant shortcomings:
 
 ## 6. Business Model & Monetization
 
-CropScan AI operates on a **B2B Tiered SaaS Subscription** model tailored for commercial farms:
+CropEye operates on a **B2B Tiered SaaS Subscription** model tailored for commercial farms:
 
 ### Pricing Tiers
 - **Grower Standard (Up to 1,500 acres)**: **$349 / month** (Unlimited smartphone scans, automated disease classification, EPA dosage calculator).
@@ -84,7 +84,7 @@ CropScan AI operates on a **B2B Tiered SaaS Subscription** model tailored for co
 
 ## 7. Competitive Landscape
 
-| Feature / Capability | Agronomic Testing Labs | Satellite NDVI (Sentinel) | OEM Smart Rigs (John Deere) | **CropScan AI (Our Solution)** |
+| Feature / Capability | Agronomic Testing Labs | Satellite NDVI (Sentinel) | OEM Smart Rigs (John Deere) | **CropEye (Our Solution)** |
 |---|---|---|---|---|
 | **Turnaround Time** | 5–10 Days | 3–5 Days | Real-time | **< 2 Seconds** |
 | **Pathogen Classification**| Lab Culture | ❌ No (Only greenness) | Partial (Weed only) | **✅ 35+ Specific Fungal/Pest Diseases** |

@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   return NextResponse.json({
     status: "operational",
-    service: "CropScan AI Sentinel Engine",
+    service: "CropEye Engine",
     version: "1.0.0",
     hackathonConstraints: {
       team: "CopyPasta",

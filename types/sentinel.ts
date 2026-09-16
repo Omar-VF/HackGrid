@@ -1,5 +1,5 @@
 // ============================================================================
-// Master TypeScript Contract: CropScan AI Sentinel
+// Master TypeScript Contract: CropEye
 // Shared single-source-of-truth for Workstream A (Engine) and B (Frontend)
 // ============================================================================
 
@@ -10,13 +10,12 @@ export type PathogenId =
   | 'potato_late_blight' 
   | 'tomato_early_blight' 
   | 'corn_rust' 
-  | 'soybean_rust'
-  | 'soybean_frogeye'
   | 'corn_northern_blight'
   | 'wheat_rust'
   | 'apple_scab'
   | 'apple_rust'
   | 'powdery_mildew' 
+  | 'non_plant_detected'
   | 'healthy';
 
 export interface BoundingBox {
@@ -31,6 +30,25 @@ export interface BoundingBox {
 
 export type SeverityLevel = 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
 
+export interface RAGMatch {
+  specimenId: string; // e.g. "USDA-PLB-0492"
+  cropSpecies: string; // e.g. "Solanum tuberosum (Russet Burbank)"
+  pathogenName: string; // e.g. "Phytophthora infestans"
+  commonName: string; // e.g. "Potato Late Blight"
+  pathogenId: PathogenId;
+  similarityScore: number; // 0.0 to 100.0 (e.g. 98.4%)
+  institutionSource: string; // e.g. "USDA-ARS / Cornell Extension Plant Pathology Atlas"
+  diagnosticMarkers: string[]; // e.g. ["Water-soaked dark necrotic lesions", "Advancing pale chlorotic margin", "Irregular foliar tip expansion"]
+}
+
+export interface RAGRetrievalResult {
+  queryVectorDimensions: number; // 32
+  topMatch: RAGMatch;
+  candidates: RAGMatch[]; // Top 3-5 candidates from the database
+  totalAtlasSpecimensIndexed: number; // e.g. 14200
+  retrievalLatencyMs: number;
+}
+
 export interface DiagnosticResult {
   pathogenId: PathogenId;
   commonName: string;
@@ -41,6 +59,7 @@ export interface DiagnosticResult {
   boundingBoxes: BoundingBox[];
   imageUrl: string;
   scannedAt: string; // ISO timestamp
+  ragRetrieval?: RAGRetrievalResult;
 }
 
 // ==========================================
@@ -56,6 +75,11 @@ export interface WeatherTelemetry {
   sporeSpreadRisk: SporeSpreadRisk;
   wallinIndex: number; // 0 to 4 scale
   summary: string;
+  source?: string; // e.g. "Open-Meteo Live API"
+  latitude?: number;
+  longitude?: number;
+  lastUpdated?: string;
+  isSimulated?: boolean;
 }
 
 // ==========================================

@@ -63,30 +63,6 @@ export const AGRONOMIC_FORMULARY: Record<PathogenId, PathogenChemicalRecipe> = {
     cropValuePerAcreUsd: 980,
     typicalLossRatePct: 0.18,
   },
-  soybean_rust: {
-    chemicalName: "Priaxor (Pyraclostrobin + Fluxapyroxad)",
-    epaRegNumber: "EPA Reg. #7969-311",
-    activeIngredient: "Pyraclostrobin (28.58%) + Fluxapyroxad (14.33%)",
-    ratePerAcreValue: 4.0,
-    rateUnit: "fl_oz",
-    rateDescription: "4.0 fl oz / acre",
-    waterGalPerAcre: 15,
-    unitCostUsd: 4.25, // ~$17.00 / acre
-    cropValuePerAcreUsd: 820,
-    typicalLossRatePct: 0.32,
-  },
-  soybean_frogeye: {
-    chemicalName: "Quadris Top SBX (Azoxystrobin + Difenoconazole)",
-    epaRegNumber: "EPA Reg. #100-1554",
-    activeIngredient: "Azoxystrobin (18.2%) + Difenoconazole (11.4%)",
-    ratePerAcreValue: 7.0,
-    rateUnit: "fl_oz",
-    rateDescription: "7.0 fl oz / acre",
-    waterGalPerAcre: 15,
-    unitCostUsd: 2.60, // ~$18.20 / acre
-    cropValuePerAcreUsd: 820,
-    typicalLossRatePct: 0.22,
-  },
   corn_northern_blight: {
     chemicalName: "Headline AMP (Pyraclostrobin + Metconazole)",
     epaRegNumber: "EPA Reg. #7969-291",
@@ -147,6 +123,18 @@ export const AGRONOMIC_FORMULARY: Record<PathogenId, PathogenChemicalRecipe> = {
     cropValuePerAcreUsd: 2800,
     typicalLossRatePct: 0.20,
   },
+  non_plant_detected: {
+    chemicalName: "No Chemical Application (Non-Crop Image)",
+    epaRegNumber: "EPA Exempt / Invalid Target",
+    activeIngredient: "None (Non-Agricultural Subject)",
+    ratePerAcreValue: 0.0,
+    rateUnit: "none",
+    rateDescription: "0.0 pt / acre",
+    waterGalPerAcre: 0,
+    unitCostUsd: 0,
+    cropValuePerAcreUsd: 0,
+    typicalLossRatePct: 0.0,
+  },
   healthy: {
     chemicalName: "No Chemical Intervention Required",
     epaRegNumber: "EPA Exempt / Natural Foliage",
@@ -204,10 +192,13 @@ export function calculatePrescription(
 
   // EPA Standard: Wind speeds > 10.0 mph violate application label buffers
   const isHealthy = pathogenId === "healthy";
-  const safeToSpray = isHealthy ? true : windSpeedMph <= 10.0;
+  const isNonPlant = pathogenId === "non_plant_detected";
+  const safeToSpray = isNonPlant ? false : isHealthy ? true : windSpeedMph <= 10.0;
 
   let windBufferNotice = "";
-  if (isHealthy) {
+  if (isNonPlant) {
+    windBufferNotice = "TREATMENT SUPPRESSED: Non-agricultural / invalid crop specimen detected. Zero chemical application authorized.";
+  } else if (isHealthy) {
     windBufferNotice = "Field foliage meets health thresholds. Zero chemical application required.";
   } else if (!safeToSpray) {
     windBufferNotice = `HOLD APPLICATION: Wind speed of ${windSpeedMph.toFixed(1)} mph exceeds EPA maximum limit (10.0 mph). Risk of off-target drift into aquatic buffer zones.`;
@@ -239,6 +230,13 @@ export function calculateROIEstimate(
   pathogenId: PathogenId,
   acreage: number
 ): { estimatedCropSavedUsd: number; chemicalSavingsPct: number } {
+  if (pathogenId === "non_plant_detected") {
+    return {
+      estimatedCropSavedUsd: 0,
+      chemicalSavingsPct: 0,
+    };
+  }
+
   if (pathogenId === "healthy") {
     return {
       estimatedCropSavedUsd: 0,

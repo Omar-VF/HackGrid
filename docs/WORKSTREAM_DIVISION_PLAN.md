@@ -1,4 +1,4 @@
-# CropScan AI Sentinel: Team Workstream Division & Integration Plan
+# CropEye: Team Workstream Division & Integration Plan
 
 This document is the **single source of truth** for both developers. It defines the exact division of labor, shared TypeScript interfaces, API contracts, component props, and copy-pasteable mock data so that **Workstream A (Backend & Engine)** and **Workstream B (Pure Frontend & UI)** can integrate in under 5 minutes with **zero type errors or merge conflicts**.
 

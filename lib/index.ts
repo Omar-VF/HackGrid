@@ -1,5 +1,5 @@
 // ============================================================================
-// CropScan AI Sentinel: Core Engine Exports (Workstream A)
+// CropEye: Core Engine Exports (Workstream A)
 // ============================================================================
 
 export * from "./sample-data";

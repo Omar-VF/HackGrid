@@ -1,5 +1,5 @@
 /**
- * Automated Verification Test Suite for CropScan AI Sentinel Engine (Workstream A)
+ * Automated Verification Test Suite for CropEye Engine (Workstream A)
  * Validates:
  * 1. Master Type Contracts & Sample Dataset Integrity
  * 2. CV Geometry Normalization Math
@@ -37,7 +37,7 @@ function assert(condition: boolean, message: string) {
 
 async function runTestSuite() {
   console.log("===============================================================================");
-  console.log("🚀 CROPSCAN AI SENTINEL - WORKSTREAM A ENGINE VERIFICATION");
+  console.log("🚀 CROPEYE - WORKSTREAM A ENGINE VERIFICATION");
   console.log("===============================================================================\n");
 
   // --------------------------------------------------------------------------
@@ -163,14 +163,14 @@ async function runTestSuite() {
   assert(roi.chemicalSavingsPct === 34, "Precision spray yields 34% chemical input savings");
 
   // Test Case E: Multi-pathogen recipes
-  const rxSoybean = calculatePrescription({
-    pathogenId: "soybean_rust",
+  const rxApple = calculatePrescription({
+    pathogenId: "apple_scab",
     acreage: 200,
     windSpeedMph: 5.5,
     relativeHumidity: 82,
   });
-  assert(rxSoybean.chemicalName.includes("Priaxor"), "Priaxor formulated for Asian Soybean Rust");
-  assert(rxSoybean.epaRegNumber === "EPA Reg. #7969-311", "Verified Priaxor EPA Reg Number #7969-311");
+  assert(rxApple.chemicalName.includes("Captan"), "Captan formulated for Apple Scab");
+  assert(rxApple.epaRegNumber === "EPA Reg. #66222-65", "Verified Captan EPA Reg Number #66222-65");
 
   const rxCornNorthern = calculatePrescription({
     pathogenId: "corn_northern_blight",
@@ -196,6 +196,20 @@ async function runTestSuite() {
   });
   assert(rxAppleScab.chemicalName.includes("Captan"), "Captan 80 WDG formulated for Apple Scab");
   assert(rxAppleScab.epaRegNumber === "EPA Reg. #66222-65", "Verified Captan EPA Reg Number #66222-65");
+
+  const rxNonPlant = calculatePrescription({
+    pathogenId: "non_plant_detected",
+    acreage: 140,
+    windSpeedMph: 4.0,
+    relativeHumidity: 65,
+  });
+  assert(rxNonPlant.safeToSpray === false, "Spray strictly suppressed for non-crop images");
+  assert(rxNonPlant.estimatedChemicalCostUsd === 0, "Zero chemical cost for non-crop images");
+  assert(rxNonPlant.windBufferNotice.includes("TREATMENT SUPPRESSED"), "Notice states treatment suppressed");
+
+  const roiNonPlant = calculateROIEstimate("non_plant_detected", 140);
+  assert(roiNonPlant.estimatedCropSavedUsd === 0, "Zero crop savings for non-crop images");
+  assert(roiNonPlant.chemicalSavingsPct === 0, "Zero chemical savings for non-crop images");
 
   // --------------------------------------------------------------------------
   // TEST SUITE 4: Microclimate Weather & Wallin Index Model

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Leaf, Wind, Droplets, Thermometer, Compass, Home } from 'lucide-react';
+import { Leaf, Wind, Droplets, Thermometer, Compass, Home, Radio, RefreshCw } from 'lucide-react';
 import { WeatherTelemetry } from '@/types/sentinel';
 
 interface TelemetryBarProps {
@@ -11,6 +11,8 @@ interface TelemetryBarProps {
   activeSector: string;
   weather: WeatherTelemetry;
   isAgentActive: boolean;
+  onRefreshWeather?: () => void;
+  isWeatherRefreshing?: boolean;
 }
 
 export default function TelemetryBar({
@@ -19,6 +21,8 @@ export default function TelemetryBar({
   activeSector,
   weather,
   isAgentActive,
+  onRefreshWeather,
+  isWeatherRefreshing = false,
 }: TelemetryBarProps) {
   return (
     <div className="w-full border-b border-slate-200 bg-white shadow-xs">
@@ -32,7 +36,7 @@ export default function TelemetryBar({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-bold tracking-tight text-slate-900 text-sm sm:text-base">
-                  CropScan <span className="text-agri-600">AI Sentinel</span>
+                  Crop<span className="text-agri-600">Eye</span>
                 </span>
                 <span className="rounded border border-slate-200 bg-slate-100 px-1.5 py-0.2 text-[10px] font-mono font-medium text-slate-600">
                   CAB V4.2
@@ -50,6 +54,25 @@ export default function TelemetryBar({
 
         {/* Center: Live Micro-climate Telemetry & Agent Status */}
         <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+          {/* Open-Meteo Live Badge */}
+          <div className="flex items-center gap-1.5 rounded-md border border-cyan-200 bg-cyan-50 px-2 py-1 text-[11px] font-bold text-cyan-900 shadow-2xs">
+            <Radio className="h-3 w-3 text-cyan-600 animate-pulse" />
+            <span>OPEN-METEO LIVE</span>
+            {onRefreshWeather && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  onRefreshWeather();
+                }}
+                disabled={isWeatherRefreshing}
+                title="Sync Live Open-Meteo Weather"
+                className="ml-1 text-cyan-700 hover:text-cyan-950 transition disabled:opacity-50"
+              >
+                <RefreshCw className={`h-3 w-3 ${isWeatherRefreshing ? 'animate-spin' : ''}`} />
+              </button>
+            )}
+          </div>
+
           <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-1.5 text-slate-700">
             <span className="flex items-center gap-1 text-slate-600">
               <Thermometer className="h-3.5 w-3.5 text-slate-500" />

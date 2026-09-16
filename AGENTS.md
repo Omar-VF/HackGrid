@@ -20,9 +20,9 @@ Our team (**CopyPasta**) won the following resources at auction:
 
 ---
 
-## 2. The Core Project: CropScan AI Sentinel
+## 2. The Core Project: CropEye
 
-**CropScan AI Sentinel** is an autonomous computer vision crop pathology and precision spray defense platform.
+**CropEye** is an autonomous computer vision crop pathology and precision spray defense platform.
 
 ### The Problem It Solves:
 1. **Fungal & Pest Blight**: Pathogens like Late Blight, Early Blight, and Rust destroy 20–40% of crop yields ($220B loss).

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CropScan AI Sentinel | Autonomous Computer Vision Crop Defense",
+  title: "CropEye | Autonomous Computer Vision Crop Defense",
   description:
     "Sub-2-second autonomous computer vision crop pathology detection, live microclimate Wallin spore risk modeling, and deterministic EPA tank-mix work order dispatch for commercial family farms.",
 };

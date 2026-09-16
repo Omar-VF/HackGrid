@@ -1,4 +1,4 @@
-# CropScan AI Sentinel: Project Specification & Implementation Blueprint
+# CropEye: Project Specification & Implementation Blueprint
 
 An autonomous computer vision crop pathology and precision spray defense platform engineered for commercial farms (Small Businesses) within the **HackGrid** auction constraints.
 
@@ -15,7 +15,7 @@ An autonomous computer vision crop pathology and precision spray defense platfor
 | **Surplus Retained**| 💰 **1,700 credits** | — | — | Positive bankroll finish with zero tournament debt. |
 
 ### Integrity Verification Statement
-> **Strict Compliance**: CropScan AI strictly adheres to the four won tiers. All diagnostic reasoning is driven by computer vision models (image segmentation, object detection, pathology classification) operating inside an autonomous multi-step execution loop. All customer pricing and features are designed specifically for Small Businesses (commercial farms). **Zero Generative AI text generation is used**, eliminating all integrity violation risks.
+> **Strict Compliance**: CropEye strictly adheres to the four won tiers. All diagnostic reasoning is driven by computer vision models (image segmentation, object detection, pathology classification) operating inside an autonomous multi-step execution loop. All customer pricing and features are designed specifically for Small Businesses (commercial farms). **Zero Generative AI text generation is used**, eliminating all integrity violation risks.
 
 ---
 
@@ -52,7 +52,7 @@ An autonomous computer vision crop pathology and precision spray defense platfor
 
 ## 4. System Architecture & Autonomous Workflow Pipeline
 
-CropScan AI Sentinel is built around a **5-Stage Autonomous Execution Engine**. Once triggered (via scheduled drone upload, camera feed, or field file drop), the workflow executes completely autonomously without requiring human intervention:
+CropEye is built around a **5-Stage Autonomous Execution Engine**. Once triggered (via scheduled drone upload, camera feed, or field file drop), the workflow executes completely autonomously without requiring human intervention:
 
 ```mermaid
 graph TD

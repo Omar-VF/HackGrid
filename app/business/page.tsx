@@ -44,7 +44,7 @@ export default function BusinessProposalPage() {
           </div>
 
           <h1 className="mt-3 text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
-            CropScan AI Sentinel: Business Case &amp; Market Integrity
+            CropEye: Business Case &amp; Market Integrity
           </h1>
           <p className="mt-2 text-sm text-slate-600">
             Autonomous computer vision crop pathology and precision spray defense platform
@@ -105,7 +105,7 @@ export default function BusinessProposalPage() {
             <div className="space-y-4 text-sm text-slate-700">
               <h2 className="text-xl font-bold text-slate-900">1. Business Idea</h2>
               <p>
-                <strong>CropScan AI Sentinel</strong> is an intelligent visual crop pathology and
+                <strong>CropEye</strong> is an intelligent visual crop pathology and
                 precision treatment platform built exclusively for commercial agriculture.
               </p>
               <p>
@@ -289,7 +289,7 @@ export default function BusinessProposalPage() {
                       <th className="py-2">Agronomic Labs</th>
                       <th className="py-2">Satellite NDVI</th>
                       <th className="py-2">OEM Smart Rigs</th>
-                      <th className="py-2 text-agri-700 font-bold">CropScan AI Sentinel</th>
+                      <th className="py-2 text-agri-700 font-bold">CropEye</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700">

@@ -12,10 +12,12 @@ import {
   SAMPLE_DIAGNOSTICS,
   executeAutonomousWorkflow,
   getLiveWeather,
+  getSimulatedHighRiskWeather,
 } from '@/lib';
 import TelemetryBar from '@/components/TelemetryBar';
 import AutonomousPipeline from '@/components/AutonomousPipeline';
 import VisionCanvas from '@/components/VisionCanvas';
+import WeatherMicroclimateCard from '@/components/WeatherMicroclimateCard';
 import PrescriptionCard from '@/components/PrescriptionCard';
 import WorkOrderDispatch from '@/components/WorkOrderDispatch';
 import ROICounter from '@/components/ROICounter';
@@ -29,20 +31,39 @@ export default function DashboardPage() {
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [cycleTime, setCycleTime] = useState<string>('2.4S');
+  const [isWeatherRefreshing, setIsWeatherRefreshing] = useState<boolean>(false);
 
   // Fetch live Open-Meteo microclimate telemetry on mount
   useEffect(() => {
-    getLiveWeather()
-      .then((liveWeather) => {
-        setTicket((prev) => ({
-          ...prev,
-          weather: liveWeather,
-        }));
-      })
-      .catch((err) => {
-        console.warn('Initial live weather fetch notice:', err);
-      });
+    handleRefreshWeather();
   }, []);
+
+  const handleRefreshWeather = async () => {
+    setIsWeatherRefreshing(true);
+    try {
+      const liveWeather = await getLiveWeather();
+      setTicket((prev) => ({
+        ...prev,
+        weather: liveWeather,
+      }));
+    } catch (err) {
+      console.warn('Initial live weather fetch notice:', err);
+    } finally {
+      setIsWeatherRefreshing(false);
+    }
+  };
+
+  const handleToggleHighRisk = () => {
+    if (ticket.weather.isSimulated) {
+      handleRefreshWeather();
+    } else {
+      const sim = getSimulatedHighRiskWeather();
+      setTicket((prev) => ({
+        ...prev,
+        weather: sim,
+      }));
+    }
+  };
 
   const runAutonomousScan = async (sampleId: PathogenId, customData?: string) => {
     if (isRunning) return;
@@ -96,6 +117,8 @@ export default function DashboardPage() {
         activeSector="4B (140 Acres Russet Potatoes)"
         weather={ticket.weather}
         isAgentActive={!isRunning}
+        onRefreshWeather={handleRefreshWeather}
+        isWeatherRefreshing={isWeatherRefreshing}
       />
 
       {/* Main Command Center Cockpit Container */}
@@ -122,7 +145,15 @@ export default function DashboardPage() {
 
           {/* Right Column: Prescriptive Defense, Work Order & ROI (5 cols) */}
           <div className="lg:col-span-5 space-y-5">
-            {/* Card 02: Deterministic EPA Tank-Mix */}
+            {/* Card 02: Open-Meteo Micro-Climate Telemetry (Stage 3) */}
+            <WeatherMicroclimateCard
+              weather={ticket.weather}
+              onRefreshWeather={handleRefreshWeather}
+              onToggleHighRisk={handleToggleHighRisk}
+              isRefreshing={isWeatherRefreshing}
+            />
+
+            {/* Card 03: Deterministic EPA Tank-Mix */}
             <PrescriptionCard
               prescription={ticket.prescription}
               acreage={ticket.acreage}

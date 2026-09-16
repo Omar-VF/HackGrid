@@ -37,8 +37,14 @@ export default function WorkOrderDispatch({
             Tractor Work-Order Dispatch
           </h3>
         </div>
-        <span className="rounded border border-agri-300 bg-agri-50 px-2 py-0.5 text-[10px] font-mono font-bold text-agri-800">
-          STATION DISPATCHED
+        <span
+          className={`rounded border px-2 py-0.5 text-[10px] font-mono font-bold ${
+            ticket.diagnostic.pathogenId === 'non_plant_detected'
+              ? 'border-amber-300 bg-amber-50 text-amber-800'
+              : 'border-agri-300 bg-agri-50 text-agri-800'
+          }`}
+        >
+          {ticket.diagnostic.pathogenId === 'non_plant_detected' ? 'DISPATCH SUPPRESSED' : 'STATION DISPATCHED'}
         </span>
       </div>
 
@@ -48,7 +54,7 @@ export default function WorkOrderDispatch({
           Ticket: <strong className="text-slate-900">{ticket.ticketId}</strong>
         </div>
         <div>
-          Target: <strong className="text-slate-900">Sector 4B (140 Acres)</strong>
+          Target: <strong className="text-slate-900">{ticket.diagnostic.pathogenId === 'non_plant_detected' ? 'No Treatment Zone' : 'Sector 4B (140 Acres)'}</strong>
         </div>
       </div>
 
@@ -59,7 +65,7 @@ export default function WorkOrderDispatch({
             Assigned Unit
           </span>
           <div className="mt-0.5 font-bold text-slate-900">
-            John Deere R4045 #02
+            {ticket.diagnostic.pathogenId === 'non_plant_detected' ? 'Unit Standby (No Target)' : 'John Deere R4045 #02'}
           </div>
         </div>
 
@@ -86,7 +92,7 @@ export default function WorkOrderDispatch({
             Nozzle PSI
           </span>
           <div className="mt-0.5 font-bold text-slate-900">
-            42 PSI • Coarse Droplets
+            {ticket.diagnostic.pathogenId === 'non_plant_detected' ? '0 PSI • Spray Closed' : '42 PSI • Coarse Droplets'}
           </div>
         </div>
       </div>
@@ -103,7 +109,7 @@ export default function WorkOrderDispatch({
 
         <button
           onClick={handleDispatch}
-          disabled={isDispatching}
+          disabled={isDispatching || ticket.diagnostic.pathogenId === 'non_plant_detected'}
           className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-slate-900 active:scale-[0.99] disabled:opacity-50"
         >
           {isDispatching ? (
@@ -115,6 +121,11 @@ export default function WorkOrderDispatch({
             <>
               <Check className="h-3.5 w-3.5 text-agri-600 stroke-[2.5]" />
               <span className="text-agri-700 font-medium">Dispatched to Cab #02</span>
+            </>
+          ) : ticket.diagnostic.pathogenId === 'non_plant_detected' ? (
+            <>
+              <Radio className="h-3.5 w-3.5 text-slate-400" />
+              <span>Dispatch Suppressed</span>
             </>
           ) : (
             <>

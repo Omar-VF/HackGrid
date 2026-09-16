@@ -11,7 +11,7 @@ export interface WeatherCoordinates {
   longitude: number;
 }
 
-// Default Coordinates: Minnesota Agricultural Belt (Commercial Potato/Soybean Sector)
+// Default Coordinates: Minnesota Agricultural Belt (Commercial Potato / Corn Sector)
 export const DEFAULT_FARM_COORDINATES: WeatherCoordinates = {
   latitude: 44.9778,
   longitude: -93.265,
@@ -116,6 +116,11 @@ export async function getLiveWeather(
       sporeSpreadRisk: risk,
       wallinIndex: index,
       summary,
+      source: "Open-Meteo Live Meteorological API",
+      latitude: data.latitude ?? latitude,
+      longitude: data.longitude ?? longitude,
+      lastUpdated: new Date().toISOString(),
+      isSimulated: false,
     };
   } catch (error) {
     console.warn("Open-Meteo request failed or timed out. Utilizing calibrated agricultural fallback:", error);
@@ -128,6 +133,35 @@ export async function getLiveWeather(
       sporeSpreadRisk: "SEVERE",
       wallinIndex: 3,
       summary: "88% RH and 19.4°C create optimal fungal germination within 48 hours.",
+      source: "Calibrated Agronomic Model (Offline Fallback)",
+      latitude: DEFAULT_FARM_COORDINATES.latitude,
+      longitude: DEFAULT_FARM_COORDINATES.longitude,
+      lastUpdated: new Date().toISOString(),
+      isSimulated: true,
     };
   }
+}
+
+/**
+ * Returns a high-humidity Phytophthora infection event for demonstration and testing.
+ */
+export function getSimulatedHighRiskWeather(): WeatherTelemetry {
+  const tempC = 19.4;
+  const relativeHumidity = 88;
+  const windSpeedMph = 6.2;
+  const { index, risk, summary } = calculateWallinIndex(tempC, relativeHumidity);
+  return {
+    temperatureC: tempC,
+    relativeHumidity,
+    windSpeedMph,
+    condition: "High Moisture / Foggy Canopy (Microclimate Outbreak)",
+    sporeSpreadRisk: risk,
+    wallinIndex: index,
+    summary,
+    source: "Epidemic Simulation: High-Humidity Blight Event",
+    latitude: DEFAULT_FARM_COORDINATES.latitude,
+    longitude: DEFAULT_FARM_COORDINATES.longitude,
+    lastUpdated: new Date().toISOString(),
+    isSimulated: true,
+  };
 }

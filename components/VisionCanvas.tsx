@@ -129,13 +129,14 @@ export default function VisionCanvas({
         {/* Bounding Boxes Overlays */}
         {diagnostic.boundingBoxes.map((box) => {
           const isHealthy = diagnostic.pathogenId === 'healthy';
-          const borderColor = isHealthy ? 'border-agri-500' : 'border-alert-600';
-          const bgColor = isHealthy ? 'bg-agri-600' : 'bg-alert-600';
+          const isNonPlant = diagnostic.pathogenId === 'non_plant_detected' || box.id.includes('invalid') || box.label.includes('INVALID');
+          const borderColor = isNonPlant ? 'border-amber-500' : isHealthy ? 'border-agri-500' : 'border-alert-600';
+          const bgColor = isNonPlant ? 'bg-amber-600' : isHealthy ? 'bg-agri-600' : 'bg-alert-600';
 
           return (
             <div
               key={box.id}
-              className={`absolute ${borderColor} border-2 rounded-xs transition-all pointer-events-none`}
+              className={`absolute ${borderColor} ${isNonPlant ? 'border-dashed border-2' : 'border-2'} rounded-xs transition-all pointer-events-none`}
               style={{
                 top: `${box.ymin}%`,
                 left: `${box.xmin}%`,
@@ -162,14 +163,22 @@ export default function VisionCanvas({
         </div>
 
         {/* Top Right Hazard Level */}
-        <div className="absolute top-3 right-3 rounded border border-red-700/80 bg-red-950/80 px-2 py-1 text-[10px] font-mono font-bold text-red-300">
-          DEFENSE HAZARD LEVEL {diagnostic.severityLevel === 'CRITICAL' ? 4 : diagnostic.severityLevel === 'HIGH' ? 3 : diagnostic.severityLevel === 'MODERATE' ? 2 : 0}
+        <div className="absolute top-3 right-3 rounded border border-slate-700/80 bg-slate-900/85 px-2 py-1 text-[10px] font-mono font-bold text-slate-200">
+          {diagnostic.pathogenId === 'non_plant_detected' ? (
+            <span className="text-amber-400">NON-CROP SUBJECT (DEFENSE INACTIVE)</span>
+          ) : (
+            <span className={diagnostic.pathogenId === 'healthy' ? 'text-agri-400' : 'text-red-400'}>
+              DEFENSE HAZARD LEVEL {diagnostic.severityLevel === 'CRITICAL' ? 4 : diagnostic.severityLevel === 'HIGH' ? 3 : diagnostic.severityLevel === 'MODERATE' ? 2 : 0}
+            </span>
+          )}
         </div>
 
         {/* Bottom Sensor Metadata Strip */}
         <div className="absolute bottom-0 inset-x-0 flex flex-wrap items-center justify-between border-t border-slate-800 bg-slate-950/90 px-3 py-1.5 text-[10px] font-mono text-slate-400 backdrop-blur-xs">
           <span>SENSOR: MULTISPECTRAL-CAM #04</span>
-          <span>RESOL: 4096x2160 • NDVI: {diagnostic.pathogenId === 'healthy' ? '0.82 (OPTIMAL VIGOR)' : '0.28 (STRESSED)'}</span>
+          <span>
+            RESOL: 4096x2160 • NDVI: {diagnostic.pathogenId === 'non_plant_detected' ? '0.00 (NO CHLOROPHYLL DETECTED)' : diagnostic.pathogenId === 'healthy' ? '0.82 (OPTIMAL VIGOR)' : '0.28 (STRESSED)'}
+          </span>
         </div>
       </div>
 
@@ -217,7 +226,14 @@ export default function VisionCanvas({
             Pathogen Classification
           </span>
           <div className="mt-0.5 font-bold text-slate-900">{diagnostic.commonName}</div>
-          <div className="text-[11px] italic text-slate-500">{diagnostic.scientificName}</div>
+          <div className={`text-[11px] italic ${diagnostic.commonName.includes('(Est.') ? 'text-amber-600' : 'text-slate-500'}`}>
+            {diagnostic.scientificName}
+          </div>
+          {diagnostic.commonName.includes('(Est.') && (
+            <div className="mt-1 flex items-center gap-1 rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-mono font-bold text-amber-700">
+              <span>⚠ Low confidence — species outside 38-class training set</span>
+            </div>
+          )}
         </div>
 
         {/* Biosafety Threat */}
@@ -228,16 +244,18 @@ export default function VisionCanvas({
           <div className="mt-0.5 flex items-center gap-1.5">
             <span
               className={`rounded px-1.5 py-0.5 text-[10px] font-mono font-bold ${
-                diagnostic.pathogenId === 'healthy'
+                diagnostic.pathogenId === 'non_plant_detected'
+                  ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                  : diagnostic.pathogenId === 'healthy'
                   ? 'bg-agri-100 text-agri-800 border border-agri-300'
                   : 'bg-alert-100 text-alert-700 border border-alert-200'
               }`}
             >
-              [ {diagnostic.severityLevel === 'CRITICAL' ? 'CRITICAL TIER 3' : diagnostic.severityLevel} ]
+              [ {diagnostic.pathogenId === 'non_plant_detected' ? 'NON-CROP SPECIMEN' : diagnostic.severityLevel === 'CRITICAL' ? 'CRITICAL TIER 3' : diagnostic.severityLevel} ]
             </span>
           </div>
           <div className="mt-0.5 text-[11px] font-mono text-slate-500">
-            Spread Index: {diagnostic.pathogenId === 'potato_late_blight' ? '8.8/10' : diagnostic.pathogenId === 'tomato_early_blight' ? '5.4/10' : diagnostic.pathogenId === 'corn_rust' ? '7.1/10' : '0.2/10'}
+            Spread Index: {diagnostic.pathogenId === 'non_plant_detected' ? '0.0/10 (N/A)' : diagnostic.pathogenId === 'potato_late_blight' ? '8.8/10' : diagnostic.pathogenId === 'tomato_early_blight' ? '5.4/10' : diagnostic.pathogenId === 'corn_rust' ? '7.1/10' : '0.2/10'}
           </div>
         </div>
 
@@ -250,10 +268,91 @@ export default function VisionCanvas({
             {diagnostic.necrosisPercentage}% Affected Surface Area
           </div>
           <div className="text-[11px] text-slate-500">
-            Model Confidence: <strong className="text-slate-700">{diagnostic.confidence}%</strong>
+            Atlas Confidence: <strong className="text-slate-700 font-bold">{diagnostic.confidence}%</strong>
+            <span className="ml-1 text-agri-700 font-mono text-[10px]">[Cosine Match]</span>
           </div>
         </div>
       </div>
+
+      {/* RAG Vector Pathology Database Audit Trail */}
+      {diagnostic.ragRetrieval && (
+        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50/80 p-3.5 text-xs">
+          <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+            <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold text-slate-800">
+              <span className="h-2 w-2 rounded-full bg-agri-600 animate-pulse" />
+              <span>RAG VECTOR RETRIEVAL AUDIT TRAIL</span>
+            </div>
+            <span className="font-mono text-[10px] text-slate-500">
+              {diagnostic.ragRetrieval.totalAtlasSpecimensIndexed.toLocaleString()} Specimens Indexed • {diagnostic.ragRetrieval.queryVectorDimensions}D Vector
+            </span>
+          </div>
+
+          <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Top Match & Institution */}
+            <div>
+              <div className="text-[10px] font-mono uppercase text-slate-400">
+                Peer-Reviewed Reference Match:
+              </div>
+              <div className="mt-0.5 font-bold text-slate-900">
+                {diagnostic.ragRetrieval.topMatch.commonName}
+                <span className="ml-1.5 rounded bg-agri-100 px-1.5 py-0.2 text-[10px] font-mono text-agri-800">
+                  {diagnostic.ragRetrieval.topMatch.similarityScore}% Cosine Match
+                </span>
+              </div>
+              <div className="mt-0.5 text-[10px] font-mono text-slate-500">
+                Specimen ID: <strong>{diagnostic.ragRetrieval.topMatch.specimenId}</strong>
+              </div>
+              <div className="text-[10px] text-slate-500">
+                Source: {diagnostic.ragRetrieval.topMatch.institutionSource}
+              </div>
+            </div>
+
+            {/* Candidate Similarity Ranking */}
+            <div>
+              <div className="text-[10px] font-mono uppercase text-slate-400 mb-1">
+                Top Candidate Similarity Ranks:
+              </div>
+              <div className="space-y-1.5 font-mono text-[11px]">
+                {diagnostic.ragRetrieval.candidates.map((cand, idx) => (
+                  <div key={cand.specimenId} className="flex items-center justify-between gap-2">
+                    <span className="truncate text-slate-700">
+                      {idx + 1}. {cand.commonName}
+                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="h-1.5 w-16 bg-slate-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${idx === 0 ? 'bg-agri-600' : 'bg-slate-400'}`}
+                          style={{ width: `${cand.similarityScore}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-800 w-9 text-right">
+                        {cand.similarityScore}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Diagnostic Morphological Markers */}
+          {diagnostic.ragRetrieval.topMatch.diagnosticMarkers.length > 0 && (
+            <div className="mt-2.5 border-t border-slate-200/60 pt-2">
+              <div className="text-[10px] font-mono uppercase text-slate-400 mb-1">
+                Retrieved Botanical Diagnostic Criteria:
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] text-slate-600">
+                {diagnostic.ragRetrieval.topMatch.diagnosticMarkers.map((marker, i) => (
+                  <div key={i} className="flex items-start gap-1">
+                    <span className="text-agri-600 font-bold">•</span>
+                    <span>{marker}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Camera Capture Modal Integration */}
       <CameraCapture

@@ -1,4 +1,4 @@
-# CropScan AI Sentinel: Design System & Master Figma AI Prompt
+# CropEye: Design System & Master Figma AI Prompt
 
 This document provides the **exact design specifications, color tokens, and a copy-pasteable Figma AI prompt** to stop AI design tools from generating bloat, random charts, and neon dark modes.
 
@@ -37,7 +37,7 @@ This document provides the **exact design specifications, color tokens, and a co
 Copy and paste this entire prompt block into your Figma AI generator:
 
 ```markdown
-Generate a clean, professional, enterprise B2B SaaS desktop UI for "CropScan AI Sentinel", an autonomous computer-vision agricultural defense platform for commercial family farms.
+Generate a clean, professional, enterprise B2B SaaS desktop UI for "CropEye", an autonomous computer-vision agricultural defense platform for commercial family farms.
 
 STYLE & THEME GUIDELINES (STRICT):
 - THEME: 100% Light Mode. Crisp, utilitarian, professional enterprise software (similar to Linear or Stripe Dashboard in light mode).
@@ -56,7 +56,7 @@ SCREEN 1: THE FARM COMMAND CENTER DASHBOARD (/dashboard)
 Design a widescreen desktop dashboard composed of the following clean cards:
 
 1. TOP TELEMETRY HEADER:
-   - Left: Logo "CropScan AI Sentinel" with a simple green leaf badge.
+   - Left: Logo "CropEye" with a simple green leaf badge.
    - Middle: Farm context: "Oak Ridge Commercial Farm" | "1,850 Total Acres" | "Sector 4B (140 Acres Potatoes)".
    - Right: Live microclimate badge: "19.4°C | 88% Humidity | Wind: 6.2 mph" with a solid amber risk pill: "[ SEVERE SPORE VELOCITY ]".
 
