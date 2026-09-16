@@ -101,10 +101,25 @@ export default function DashboardPage() {
   };
 
   const handleSelectSample = (sampleId: PathogenId) => {
+    if (sampleId in SAMPLE_DIAGNOSTICS) {
+      setTicket((prev) => ({
+        ...prev,
+        diagnostic: SAMPLE_DIAGNOSTICS[sampleId],
+      }));
+    }
     runAutonomousScan(sampleId);
   };
 
   const handleCustomImageCapture = (imageDataUrl: string) => {
+    setTicket((prev) => ({
+      ...prev,
+      diagnostic: {
+        ...prev.diagnostic,
+        imageUrl: imageDataUrl,
+        boundingBoxes: [],
+        foliarMaskUrl: undefined,
+      },
+    }));
     runAutonomousScan('potato_late_blight', imageDataUrl);
   };
 

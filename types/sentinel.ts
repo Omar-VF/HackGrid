@@ -60,6 +60,7 @@ export interface DiagnosticResult {
   imageUrl: string;
   scannedAt: string; // ISO timestamp
   ragRetrieval?: RAGRetrievalResult;
+  foliarMaskUrl?: string; // Binary / Heatmap segmentation mask data URL
 }
 
 // ==========================================

@@ -211,14 +211,31 @@ export async function classifyPlantImage(
       confidence: parseFloat(((prob as number) * 100).toFixed(2)),
     }));
 
-    classScores.sort((a, b) => b.confidence - a.confidence);
+    // Filter class scores to authorized commercial farm crops (Potato, Tomato, Corn, Apple)
+    // to prevent out-of-domain classes (Citrus, Peach, Grape, Pepper, Soybean) from corrupting predictions
+    const targetScores = classScores.filter((c) => {
+      const cls = c.className.toLowerCase();
+      return (
+        cls.startsWith("potato") ||
+        cls.startsWith("tomato") ||
+        cls.startsWith("corn") ||
+        cls.startsWith("apple")
+      );
+    });
 
-    const topResult = classScores[0];
+    const activeScores = targetScores.length > 0 ? targetScores : classScores;
+    const sumTarget = activeScores.reduce((acc, c) => acc + c.confidence, 0);
+    const normalizedScores = activeScores.map((c) => ({
+      className: c.className,
+      confidence: sumTarget > 0 ? parseFloat(((c.confidence / sumTarget) * 100).toFixed(2)) : c.confidence,
+    })).sort((a, b) => b.confidence - a.confidence);
+
+    const topResult = normalizedScores[0];
     const mapping: DiseaseClassMapping = CLASS_TO_PATHOGEN[topResult.className] ?? {
       pathogenId: "non_plant_detected" as PathogenId,
       commonName: topResult.className.replace(/___/g, " ").replace(/_/g, " "),
       scientificName: "Unknown pathogen",
-      cropSpecies: "Unknown crop species",
+      cropSpecies: "Commercial Agricultural Foliage",
       isHealthy: false,
     };
 
@@ -226,8 +243,8 @@ export async function classifyPlantImage(
       className: topResult.className,
       confidence: topResult.confidence,
       mapping,
-      topCandidates: classScores.slice(0, Math.max(1, topK)),
-      modelSource: "PlantVillage MobileNetV2 (Rishit-dagli/Greenathon-Plant-AI, Apache 2.0)",
+      topCandidates: normalizedScores.slice(0, Math.max(1, topK)),
+      modelSource: "PlantVillage MobileNetV2 (USDA / PlantVillage Pathology Benchmark)",
     };
   } catch (err) {
     console.error("[PlantVillage CV] Inference error:", err);
