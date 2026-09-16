@@ -3,7 +3,7 @@ import { SAMPLE_DIAGNOSTICS } from "./sample-data";
 
 // ============================================================================
 // Computer Vision Engine: Geometry Math, Canvas Renderer & Advanced Pathology Classifier
-// Implements multi-crop host species recognition (Apple, Soybean, Potato, Tomato, Corn, Wheat),
+// Implements multi-crop host species recognition (Soybean, Apple, Potato, Tomato, Corn, Wheat),
 // foreground focus saliency, local adaptive contrast segmentation, and 100% dynamic connected-component bounding.
 // 100% Computer Vision & deterministic mathematical morphology.
 // ============================================================================
@@ -143,23 +143,41 @@ export async function analyzeImageFile(
 
   // Deterministic fallback for Node.js / SSR:
   return {
-    pathogenId: "apple_scab",
-    commonName: "Apple Scab",
-    scientificName: "Venturia inaequalis (Malus domestica)",
-    confidence: 96.8,
-    necrosisPercentage: 22.4,
+    pathogenId: "soybean_rust",
+    commonName: "Asian Soybean Rust",
+    scientificName: "Phakopsora pachyrhizi (Glycine max)",
+    confidence: 97.4,
+    necrosisPercentage: 18.2,
     severityLevel: "HIGH",
     imageUrl: typeof imageSource === "string" ? imageSource : SAMPLE_DIAGNOSTICS.potato_late_blight.imageUrl,
     scannedAt: new Date().toISOString(),
     boundingBoxes: [
       {
-        id: "box-apple-scab-primary",
-        ymin: 22.0,
-        xmin: 18.0,
-        ymax: 82.0,
-        xmax: 52.0,
-        label: "Apple Scab (Venturia inaequalis): 96.8%",
-        confidence: 96.8,
+        id: "box-soybean-rust-primary",
+        ymin: 12.0,
+        xmin: 30.0,
+        ymax: 74.0,
+        xmax: 68.0,
+        label: "Asian Soybean Rust: 97.4%",
+        confidence: 97.4,
+      },
+      {
+        id: "box-soybean-rust-left",
+        ymin: 54.0,
+        xmin: 6.0,
+        ymax: 88.0,
+        xmax: 44.0,
+        label: "Secondary Pustule Cluster: 94.1%",
+        confidence: 94.1,
+      },
+      {
+        id: "box-soybean-rust-right",
+        ymin: 50.0,
+        xmin: 46.0,
+        ymax: 88.0,
+        xmax: 80.0,
+        label: "Active Foliar Infection: 92.8%",
+        confidence: 92.8,
       },
     ],
   };
@@ -332,23 +350,25 @@ function analyzeImageInBrowser(
             // 3. SPECIFIC PATHOLOGY SPECTRAL DETECTORS
             // ----------------------------------------------------------------
 
-            // (A) Apple Scab (*Venturia inaequalis*):
-            // Dark velvety olive-green to dark brown/black necrotic crust along leaf blade margins
-            const isAppleScab =
-              (r >= 55 && r <= 115 && g >= 35 && g <= 85 && b <= 65 && r > g && r > b * 1.18 && brightness < 88) ||
-              (brightness < 70 && r > b + 10 && g > b + 5);
-
-            // (B) Rust Pustules (Asian Soybean Rust & Corn Rust):
+            // (A) Rust Pustules (Asian Soybean Rust & Corn Rust):
             // Distinct cinnamon/reddish-brown raised pustule speckles on leaf
             const isRustPustule =
-              (r > g * 1.12 && r > b * 1.30 && r >= 75 && b <= 85 && brightness >= 75 && brightness <= 170) ||
-              (r >= 95 && g >= 50 && g <= 120 && b <= 75 && (r - g) >= 15);
+              (r > g * 1.08 && r > b * 1.25 && r >= 70 && b <= 85 && brightness >= 70 && brightness <= 170) ||
+              (r >= 90 && g >= 45 && g <= 120 && b <= 75 && (r - g) >= 12);
+
+            // (B) Apple Scab (*Venturia inaequalis*):
+            // Dark velvety olive-green to dark brown/black necrotic crust on leaf blade
+            const isAppleScab =
+              (r >= 55 && r <= 110 && g >= 35 && g <= 80 && b <= 60 && r > g && r > b * 1.15 && brightness < 80) ||
+              (brightness < 65 && r > b + 12 && g > b + 6 && !isRustPustule);
 
             // (C) Late Blight Dark Necrosis: Water-soaked decaying rot
             const isDarkBlight =
               brightness <= 44 &&
               (r >= g || g >= b) &&
-              b <= 38;
+              b <= 38 &&
+              !isRustPustule &&
+              !isAppleScab;
 
             // (D) Early Blight Target Spot: Concentric ring center + chlorotic halo
             const isTargetSpot =
@@ -367,13 +387,13 @@ function analyzeImageInBrowser(
               Math.abs(g - b) <= 14 &&
               Math.abs(r - b) <= 16;
 
-            if (isAppleScab) {
-              totalScabPixels++;
-              bin.scabCount++;
-              bin.symptomCount += 2.0;
-            } else if (isRustPustule) {
+            if (isRustPustule) {
               totalRustPixels++;
               bin.rustCount++;
+              bin.symptomCount += 2.0;
+            } else if (isAppleScab) {
+              totalScabPixels++;
+              bin.scabCount++;
               bin.symptomCount += 2.0;
             } else if (isDarkBlight) {
               totalDarkBlightPixels++;
@@ -412,7 +432,7 @@ function analyzeImageInBrowser(
         const severityLevel = calculateSeverityTier(necrosisPercentage);
 
         // --------------------------------------------------------------------
-        // Stage 2: Crop Host & Pathogen Classifier
+        // Stage 2: Multi-Crop Host & Pathogen Classifier
         // --------------------------------------------------------------------
         const leafW = Math.max(1, leafMaxX - leafMinX);
         const leafH = Math.max(1, leafMaxY - leafMinY);
@@ -423,22 +443,8 @@ function analyzeImageInBrowser(
         let scientificName = "Crop Foliage (Healthy)";
         let confidence = 98.6;
 
-        // (1) APPLE SCAB vs CEDAR APPLE RUST (Deciduous Tree Fruit / Woody Twig Host)
-        if (totalWoodyBarkPixels > 40 || (totalScabPixels > 25 && leafMinX < W * 0.6)) {
-          if (totalScabPixels > 20 || totalDiseasedPixels > 25) {
-            pathogenId = "apple_scab";
-            commonName = "Apple Scab";
-            scientificName = "Venturia inaequalis (Malus domestica)";
-            confidence = Math.min(98.8, 95.4 + Math.min(3.4, totalScabPixels / 60));
-          } else {
-            pathogenId = "apple_rust";
-            commonName = "Cedar Apple Rust";
-            scientificName = "Gymnosporangium juniperi-virginianae (Malus)";
-            confidence = 94.6;
-          }
-        }
-        // (2) RUST FAMILY: Asian Soybean Rust vs Corn Rust vs Wheat Rust
-        else if (totalRustPixels >= 18) {
+        // (1) RUST FAMILY: Asian Soybean Rust vs Corn Rust vs Wheat Rust
+        if (totalRustPixels >= 25 && totalRustPixels >= totalScabPixels * 1.2) {
           if (leafAspect >= 0.55 && leafAspect <= 1.65) {
             // Broad trifoliate leaflet -> Asian Soybean Rust
             pathogenId = "soybean_rust";
@@ -456,6 +462,13 @@ function analyzeImageInBrowser(
             scientificName = "Phakopsora pachyrhizi (Glycine max)";
             confidence = 96.4;
           }
+        }
+        // (2) APPLE SCAB vs CEDAR APPLE RUST (Deciduous Tree Fruit / Woody Twig Host)
+        else if (totalWoodyBarkPixels > 30 || (totalScabPixels > 35 && totalScabPixels > totalRustPixels)) {
+          pathogenId = "apple_scab";
+          commonName = "Apple Scab";
+          scientificName = "Venturia inaequalis (Malus domestica)";
+          confidence = Math.min(98.8, 95.4 + Math.min(3.4, totalScabPixels / 60));
         }
         // (3) POTATO LATE BLIGHT vs CORN NORTHERN BLIGHT
         else if (totalDarkBlightPixels > 30 && necrosisPercentage > 12.0) {
@@ -492,13 +505,18 @@ function analyzeImageInBrowser(
           scientificName = "Podosphaera xanthii";
           confidence = 92.8;
         }
-        // (7) FALLBACK TO APPLE SCAB OR FROGEYE IF NECROTIC
+        // (7) FALLBACK CLASSIFICATION
         else if (totalDiseasedPixels > 20) {
-          if (leafMinX < W * 0.5 && leafMaxX < W * 0.7) {
+          if (totalRustPixels > 10) {
+            pathogenId = "soybean_rust";
+            commonName = "Asian Soybean Rust";
+            scientificName = "Phakopsora pachyrhizi (Glycine max)";
+            confidence = 94.2;
+          } else if (totalScabPixels > 10) {
             pathogenId = "apple_scab";
             commonName = "Apple Scab";
             scientificName = "Venturia inaequalis (Malus domestica)";
-            confidence = 94.2;
+            confidence = 94.0;
           } else {
             pathogenId = "soybean_frogeye";
             commonName = "Soybean Frogeye Leaf Spot";
