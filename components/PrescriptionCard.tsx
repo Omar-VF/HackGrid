@@ -78,10 +78,20 @@ export default function PrescriptionCard({
       </div>
 
       {/* Spray Buffer & Environmental Compliance */}
-      <div className="mt-3.5 flex items-center gap-2 rounded-lg border border-agri-200 bg-agri-50/70 px-3 py-2 text-xs font-medium text-agri-900">
-        <CheckCircle2 className="h-4 w-4 text-agri-600 shrink-0" />
+      <div
+        className={`mt-3.5 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium ${
+          prescription.safeToSpray
+            ? 'border-agri-200 bg-agri-50/70 text-agri-900'
+            : 'border-alert-300 bg-alert-50 text-alert-900'
+        }`}
+      >
+        <CheckCircle2
+          className={`h-4 w-4 shrink-0 ${
+            prescription.safeToSpray ? 'text-agri-600' : 'text-alert-600'
+          }`}
+        />
         <span className="font-mono text-[11px]">
-          ✓ Wind: 6.2 mph (&lt;10 mph threshold). Buffer: 100ft verified.
+          {prescription.windBufferNotice || '✓ Wind: 6.2 mph (<10 mph threshold). Buffer: 100ft verified.'}
         </span>
       </div>
     </div>

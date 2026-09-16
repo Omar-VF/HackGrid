@@ -73,8 +73,8 @@ export default function AutonomousPipeline({
                     </span>
                     {isDone && <span className="text-[10px] text-agri-600 font-bold">✓</span>}
                   </div>
-                  <p className="text-[11px] font-mono text-slate-500 truncate leading-tight mt-0.5">
-                    {stageSubtitles[stage.stage] || stage.detail}
+                  <p className="text-[11px] font-mono text-slate-500 truncate leading-tight mt-0.5" title={stage.detail}>
+                    {stage.detail || stageSubtitles[stage.stage]}
                   </p>
                 </div>
               </div>
