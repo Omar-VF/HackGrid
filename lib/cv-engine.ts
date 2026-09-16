@@ -154,10 +154,10 @@ export async function analyzeImageFile(
       {
         id: "box-custom-1",
         ymin: 15.0,
-        xmin: 32.0,
+        xmin: 30.0,
         ymax: 58.0,
         xmax: 68.0,
-        label: "Phakopsora pachyrhizi (Soybean Rust): 96.2%",
+        label: "Asian Soybean Rust: 96.2%",
         confidence: 96.2,
       },
       {
@@ -166,8 +166,8 @@ export async function analyzeImageFile(
         xmin: 15.0,
         ymax: 85.0,
         xmax: 48.0,
-        label: "Uredinial Pustule Cluster: 92.4%",
-        confidence: 92.4,
+        label: "Secondary Rust Pustules: 93.4%",
+        confidence: 93.4,
       },
     ],
   };
@@ -263,18 +263,20 @@ function analyzeImageInBrowser(
           const cellIndex = gridRow * gridCols + gridCol;
 
           const brightness = (r + g + b) / 3;
-          const isGreenDominant = g > r * 1.08 && g > b * 1.08;
-          const isFoliage = isGreenDominant || (g > 55 && (r > 50 || b > 35));
+          const isGreenDominant = g > r * 1.05 && g > b * 1.05;
+          const isFoliage = isGreenDominant || (g > 50 && (r > 40 || b > 30));
 
           if (isFoliage) {
             totalLeafPixels++;
             grid[cellIndex].totalFoliage++;
 
-            // 1. Rust Pustule Signature: Reddish-cinnamon/tan speckles (R > G * 1.18, R > B * 1.35, moderate brightness)
-            const isRustPustule = r > g * 1.15 && r > b * 1.35 && r > 85 && brightness > 45 && brightness < 175;
+            // 1. Rust Pustule Signature: Reddish-cinnamon / brown / tan speckles (R > G, R > B with cinnamon hue)
+            const isRustPustule =
+              (r > g * 1.06 && r > b * 1.15 && r > 60 && brightness < 180) ||
+              (r > 85 && g > 55 && b < 75 && (r - g) > 10);
 
             // 2. Late Blight Dark Necrotic Core: Water-soaked black/dark brown
-            const isDarkBlight = (r > g || b < g) && brightness < 55;
+            const isDarkBlight = (r > g || b < g) && brightness < 50;
 
             // 3. General Brown Necrosis
             const isBrownNecrosis = r > g && r > b && brightness < 130;
@@ -288,7 +290,7 @@ function analyzeImageInBrowser(
             if (isRustPustule) {
               rustPustulePixels++;
               necroticPixels++;
-              grid[cellIndex].symptomCount += 2;
+              grid[cellIndex].symptomCount += 2.5;
               globalMinX = Math.min(globalMinX, px);
               globalMinY = Math.min(globalMinY, py);
               globalMaxX = Math.max(globalMaxX, px);
@@ -332,53 +334,60 @@ function analyzeImageInBrowser(
         let commonName = "Healthy Crop Foliage";
         let scientificName = "Crop Foliage (Healthy)";
         let confidence = 98.5;
+        let secondaryLabel = "Secondary Lesion Cluster";
 
-        const rustRatio = rustPustulePixels / Math.max(1, necroticPixels);
-        const darkBlightRatio = darkCoreBlightPixels / Math.max(1, necroticPixels);
-        const powderyRatio = powderyPixels / totalPixels;
+        const rustScore = rustPustulePixels * 2.2;
+        const blightScore = darkCoreBlightPixels * 1.5;
+        const chlorosisScore = chloroticPixels * 1.2;
+        const powderyScore = powderyPixels * 3.0;
 
-        if (rustPustulePixels > 30 && rustRatio > 0.40) {
-          // Rust classification: Check if Soybean (trifoliate/oval) or Corn (linear)
-          const leafSpanW = globalMaxX - globalMinX;
-          const leafSpanH = globalMaxY - globalMinY;
-          const aspectRatio = leafSpanW / Math.max(1, leafSpanH);
+        if (rustPustulePixels >= 15 && rustScore >= blightScore * 0.7) {
+          // Rust family detected: Distinguish host species based on leaf morphology
+          const leafSpanW = Math.max(1, globalMaxX - globalMinX);
+          const leafSpanH = Math.max(1, globalMaxY - globalMinY);
+          const aspectRatio = leafSpanW / leafSpanH;
 
-          if (aspectRatio > 0.8 && aspectRatio < 2.0) {
+          if (aspectRatio >= 0.7 && aspectRatio <= 2.2) {
             // Broad trifoliate/oval leaf morphology -> Asian Soybean Rust
             pathogenId = "soybean_rust";
             commonName = "Asian Soybean Rust";
             scientificName = "Phakopsora pachyrhizi (Glycine max)";
-            confidence = Math.min(98.8, 93.0 + Math.min(5.5, (rustPustulePixels / 100)));
+            confidence = Math.min(98.6, 94.5 + Math.min(4.1, rustPustulePixels / 70));
+            secondaryLabel = "Secondary Rust Pustules";
           } else {
-            // Monocot elongated blade -> Corn Common Rust
+            // Monocot elongated ribbon blade -> Corn Common Rust
             pathogenId = "corn_rust";
             commonName = "Corn Common Rust";
             scientificName = "Puccinia sorghi (Zea mays)";
             confidence = 94.2;
+            secondaryLabel = "Secondary Uredinia Streak";
           }
-        } else if (darkBlightRatio > 0.45 || necrosisPercentage > 16.0) {
-          // Large water-soaked necrotic patch -> Potato Late Blight
+        } else if (blightScore > 35 || (darkCoreBlightPixels > 25 && necrosisPercentage > 14.0)) {
+          // Large water-soaked rot patch -> Potato Late Blight
           pathogenId = "potato_late_blight";
           commonName = "Potato Late Blight";
           scientificName = "Phytophthora infestans (Solanum tuberosum)";
           confidence = 96.6;
-        } else if (chloroticPixels > 50 && necrosisPercentage > 6.0) {
-          // Concentric / halo target spot -> Tomato Early Blight
+          secondaryLabel = "Sporulation Margin";
+        } else if (chlorosisScore > 40 && necrosisPercentage > 5.0) {
+          // Concentric target spot -> Tomato Early Blight
           pathogenId = "tomato_early_blight";
           commonName = "Tomato Early Blight";
           scientificName = "Alternaria solani (Solanum lycopersicum)";
           confidence = 94.1;
-        } else if (powderyRatio > 0.12) {
+          secondaryLabel = "Concentric Target Halo";
+        } else if (powderyScore > 40) {
           pathogenId = "powdery_mildew";
           commonName = "Powdery Mildew";
           scientificName = "Podosphaera xanthii";
           confidence = 91.8;
-        } else if (necroticPixels > 40) {
-          // Moderate necrotic lesion -> Soybean Frogeye / Cercospora
+          secondaryLabel = "Mycelial Bloom";
+        } else if (necroticPixels > 25) {
           pathogenId = "soybean_frogeye";
           commonName = "Soybean Frogeye Leaf Spot";
           scientificName = "Cercospora sojina (Glycine max)";
           confidence = 92.5;
+          secondaryLabel = "Secondary Cercospora Spot";
         }
 
         // ====================================================================
@@ -386,10 +395,10 @@ function analyzeImageInBrowser(
         // ====================================================================
         const boxes: BoundingBox[] = [];
 
-        if (necroticPixels > 20) {
+        if (necroticPixels > 15) {
           // Sort cells by highest symptom density
           const activeCells = grid
-            .filter((c) => c.symptomCount >= 4 && c.totalFoliage >= 20)
+            .filter((c) => c.symptomCount >= 3 && c.totalFoliage >= 15)
             .sort((a, b) => b.symptomCount - a.symptomCount);
 
           if (activeCells.length > 0) {
@@ -416,7 +425,7 @@ function analyzeImageInBrowser(
 
             // Cluster 2: Secondary active lesion group on adjacent lobe/leaflet
             const secondaryCells = activeCells.filter(
-              (c) => !cluster1Cells.includes(c) && c.symptomCount >= 8
+              (c) => !cluster1Cells.includes(c) && c.symptomCount >= 6
             );
 
             if (secondaryCells.length > 0) {
@@ -436,7 +445,7 @@ function analyzeImageInBrowser(
                 xmin: Math.max(5, parseFloat(((c2MinX / targetW) * 100).toFixed(1))),
                 ymax: Math.min(95, parseFloat(((c2MaxY / targetH) * 100).toFixed(1))),
                 xmax: Math.min(95, parseFloat(((c2MaxX / targetW) * 100).toFixed(1))),
-                label: `Secondary Rust Inoculum: ${(confidence - 2.8).toFixed(1)}%`,
+                label: `${secondaryLabel}: ${(confidence - 2.8).toFixed(1)}%`,
                 confidence: parseFloat((confidence - 2.8).toFixed(1)),
               });
             }
