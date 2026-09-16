@@ -17,66 +17,111 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
 
-  const stopStream = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    }
-  }, [stream]);
-
-  const startStream = useCallback(async () => {
-    setIsLoading(true);
-    setCameraError(null);
-    stopStream();
-
-    try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error("Camera API is not supported in this browser. Please use file upload.");
-      }
-
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: facingMode },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-        audio: false,
+  const stopCurrentStream = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => {
+        try {
+          track.stop();
+        } catch {
+          // ignore
+        }
       });
-
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        await videoRef.current.play();
-      }
-      setIsLoading(false);
-    } catch (err) {
-      console.warn("Camera stream initialization notice:", err);
-      setCameraError(
-        err instanceof Error
-          ? err.message
-          : "Could not access camera device. Please check camera permissions or upload an image file."
-      );
-      setIsLoading(false);
+      streamRef.current = null;
     }
-  }, [facingMode, stopStream]);
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      startStream();
-    } else {
-      stopStream();
+    let isCancelled = false;
+
+    if (!isOpen) {
+      stopCurrentStream();
+      return;
     }
 
-    return () => {
-      stopStream();
+    const initCamera = async () => {
+      setIsLoading(true);
+      setCameraError(null);
+      stopCurrentStream();
+
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error("Camera API is not supported in this browser. Please use file upload.");
+        }
+
+        // Request camera with progressive constraints fallback
+        let mediaStream: MediaStream;
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: facingMode },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+            audio: false,
+          });
+        } catch (constraintErr) {
+          console.warn("Fallback to basic video constraints:", constraintErr);
+          // Fallback to basic video without advanced constraints
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+        }
+
+        if (isCancelled) {
+          mediaStream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+
+        streamRef.current = mediaStream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+          videoRef.current.onloadedmetadata = () => {
+            if (!isCancelled && videoRef.current) {
+              videoRef.current.play().catch((playErr) => {
+                // Ignore benign abort errors caused by rapid React state cycles
+                if (playErr.name !== "AbortError") {
+                  console.warn("Video play error:", playErr);
+                }
+              });
+              setIsLoading(false);
+            }
+          };
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          console.warn("Camera stream initialization notice:", err);
+          const errMsg = err instanceof Error ? err.message : String(err);
+          // Don't show abort errors as failure state
+          if (!errMsg.includes("interrupted") && !errMsg.includes("AbortError")) {
+            setCameraError(
+              err instanceof Error
+                ? err.message
+                : "Could not access camera device. Please check permissions or upload a photo."
+            );
+          }
+          setIsLoading(false);
+        }
+      }
     };
-  }, [isOpen, startStream, stopStream]);
+
+    initCamera();
+
+    return () => {
+      isCancelled = true;
+      stopCurrentStream();
+    };
+  }, [isOpen, facingMode, stopCurrentStream]);
 
   const handleCaptureFrame = () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -92,7 +137,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
 
-    stopStream();
+    stopCurrentStream();
     onCapture(dataUrl);
     onClose();
   };
@@ -105,7 +150,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       if (dataUrl) {
-        stopStream();
+        stopCurrentStream();
         onCapture(dataUrl);
         onClose();
       }
@@ -120,8 +165,8 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-none">
-      <div className="w-full max-w-xl rounded-xl border border-slate-200 bg-white shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
+      <div className="w-full max-w-xl rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div className="flex items-center gap-2">
@@ -135,7 +180,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
           </div>
           <button
             onClick={() => {
-              stopStream();
+              stopCurrentStream();
               onClose();
             }}
             className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
