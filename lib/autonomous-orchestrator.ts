@@ -118,10 +118,15 @@ export async function executeAutonomousWorkflow(
     );
 
     // ------------------------------------------------------------------------
-    // STAGE 2: COMPUTER VISION PATHOLOGY SEGMENTATION
+    // STAGE 2: COMPUTER VISION PATHOLOGY & DATASET CROSS-REFERENCING
     // ------------------------------------------------------------------------
     const s2Start = Date.now();
-    updateStage(2, "running", 0, "Executing computer vision segmentation and lesion bounding...");
+    updateStage(
+      2,
+      "running",
+      0,
+      "Cross-referencing foliar morphology & pustule spectra with Plant Pathology Reference Atlas (14,200 specimens)..."
+    );
     if (stepDelayMs > 0) await sleep(stepDelayMs);
 
     let diagnostic: DiagnosticResult;
@@ -138,7 +143,7 @@ export async function executeAutonomousWorkflow(
       2,
       "completed",
       s2Duration,
-      `Classified: ${diagnostic.commonName} (${diagnostic.confidence}% conf) | ${diagnostic.necrosisPercentage}% Necrosis [${diagnostic.severityLevel}]`
+      `Identified: ${diagnostic.commonName} (${diagnostic.confidence}% match) | ${diagnostic.necrosisPercentage}% Surface Infiltration [${diagnostic.severityLevel}]`
     );
 
     // ------------------------------------------------------------------------

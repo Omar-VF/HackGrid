@@ -116,6 +116,7 @@ export default function DashboardPage() {
               diagnostic={ticket.diagnostic}
               onSelectSample={handleSelectSample}
               onCustomImageCapture={handleCustomImageCapture}
+              isAnalyzing={isRunning}
             />
           </div>
 

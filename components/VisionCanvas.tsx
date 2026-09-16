@@ -10,12 +10,14 @@ interface VisionCanvasProps {
   diagnostic: DiagnosticResult;
   onSelectSample: (sampleId: PathogenId) => void;
   onCustomImageCapture: (imageDataUrl: string) => void;
+  isAnalyzing?: boolean;
 }
 
 export default function VisionCanvas({
   diagnostic,
   onSelectSample,
   onCustomImageCapture,
+  isAnalyzing = false,
 }: VisionCanvasProps) {
   const [activeTab, setActiveTab] = useState<'samples' | 'upload' | 'camera'>('samples');
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -106,6 +108,23 @@ export default function VisionCanvas({
 
         {/* Live Scan Radar Effect */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-agri-500/10 to-transparent opacity-40 animate-pulse" />
+
+        {/* Live Active Scanning Radar & Telemetry HUD */}
+        {isAnalyzing && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 text-center">
+            {/* Laser Line */}
+            <div className="absolute inset-x-0 top-1/3 h-1 bg-gradient-to-r from-transparent via-agri-400 to-transparent shadow-[0_0_15px_#22c55e] animate-pulse" />
+            
+            <div className="flex items-center gap-2 rounded-full border border-agri-500/40 bg-agri-950/80 px-4 py-1.5 text-xs font-mono font-bold text-agri-300 shadow-lg">
+              <span className="inline-block h-2 w-2 rounded-full bg-agri-400 animate-ping" />
+              <span>AI SENTINEL: MATCHING MORPHOLOGY VS PLANT DATASET</span>
+            </div>
+
+            <p className="mt-2.5 text-xs font-mono text-slate-300 max-w-sm">
+              Extracting leaf geometry, segmenting pustules &amp; cross-referencing with Plant Pathology Reference Atlas...
+            </p>
+          </div>
+        )}
 
         {/* Bounding Boxes Overlays */}
         {diagnostic.boundingBoxes.map((box) => {
