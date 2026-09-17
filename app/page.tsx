@@ -15,7 +15,7 @@ import {
   Compass,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import { POTATO_LATE_BLIGHT_SVG } from '@/lib/sample-data';
+import { POTATO_LATE_BLIGHT_IMAGE } from '@/lib/sample-data';
 
 export default function HomePage() {
   return (
@@ -85,7 +85,7 @@ export default function HomePage() {
               {/* Leaf Visual */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={POTATO_LATE_BLIGHT_SVG}
+                src={POTATO_LATE_BLIGHT_IMAGE}
                 alt="Late Blight Detection Preview"
                 className="h-full w-full object-cover select-none"
               />

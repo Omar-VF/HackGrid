@@ -56,7 +56,7 @@ async function runTestSuite() {
     assert(!!sample, `Sample '${key}' exists in registry`);
     assert(sample.confidence >= 90.0, `Sample '${key}' has high diagnostic confidence (${sample.confidence}%)`);
     assert(sample.boundingBoxes.length > 0, `Sample '${key}' has calibrated bounding boxes`);
-    assert(sample.imageUrl.length > 50, `Sample '${key}' contains embedded high-res SVG graphic`);
+    assert(sample.imageUrl.length > 5, `Sample '${key}' contains valid photographic image reference`);
 
     sample.boundingBoxes.forEach((box) => {
       assert(

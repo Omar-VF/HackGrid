@@ -398,6 +398,7 @@ export default function VisionCanvas({
               ['potato_late_blight', 'Potato Late Blight'],
               ['tomato_early_blight', 'Tomato Early Blight'],
               ['corn_rust', 'Corn Common Rust'],
+              ['apple_scab', 'Apple Scab'],
               ['healthy', 'Healthy Control'],
             ] as const
           ).map(([id, label]) => {
