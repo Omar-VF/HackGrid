@@ -133,14 +133,14 @@ export default function WeatherMicroclimateCard({
             Wind Velocity:
           </span>
           <div className="mt-1 font-extrabold text-slate-900 text-base">
-            {weather.windSpeedMph.toFixed(1)} mph
+            {(weather.windSpeedMph * 1.60934).toFixed(1)} km/h
           </div>
           <span
             className={`text-[10px] font-bold ${
               isSafeWind ? 'text-agri-700' : 'text-rose-600'
             }`}
           >
-            {isSafeWind ? '✓ Safe Spray Drift' : '⚠️ Drift Hold (>10mph)'}
+            {isSafeWind ? '✓ Safe Spray Drift' : '⚠️ Drift Hold (>16 km/h)'}
           </span>
         </div>
 

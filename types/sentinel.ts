@@ -90,11 +90,11 @@ export interface PrescriptiveDosage {
   chemicalName: string; // e.g. "Chlorothalonil 720 SC"
   epaRegNumber: string; // e.g. "EPA Reg. #50534-188"
   activeIngredient: string; // e.g. "Chlorothalonil (54.0%)"
-  dosagePerAcre: string; // e.g. "1.5 pt / acre"
-  waterVolumePerAcre: string; // e.g. "20 gal / acre"
-  safeToSpray: boolean; // false if wind > 10 mph or rainfall imminent
+  dosagePerAcre: string; // e.g. "700 mL / acre"
+  waterVolumePerAcre: string; // e.g. "150 L / acre"
+  safeToSpray: boolean; // false if wind > 16 km/h (10 mph) or rainfall imminent
   windBufferNotice: string;
-  totalChemicalVolume: string; // e.g. "26.2 Gallons"
+  totalChemicalVolume: string; // e.g. "98.0 Litres (98,000 mL)"
   estimatedChemicalCostUsd: number;
 }
 

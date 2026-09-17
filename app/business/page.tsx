@@ -22,9 +22,10 @@ export default function BusinessProposalPage() {
     { id: 2, title: '2. Problem Statement' },
     { id: 3, title: '3. Market Gap' },
     { id: 4, title: '4. Target Customer' },
-    { id: 5, title: '5. Product-Market Fit' },
-    { id: 6, title: '6. Business Model' },
-    { id: 7, title: '7. Competitive Moat' },
+    { id: 5, title: '5. GTM Strategy' },
+    { id: 6, title: '6. Product-Market Fit' },
+    { id: 7, title: '7. Business Model' },
+    { id: 8, title: '8. Competitive Moat' },
   ];
 
   return (
@@ -203,27 +204,45 @@ export default function BusinessProposalPage() {
 
           {activeTab === 5 && (
             <div className="space-y-4 text-sm text-slate-700">
-              <h2 className="text-xl font-bold text-slate-900">5. Product-Market Fit (PMF)</h2>
+              <h2 className="text-xl font-bold text-slate-900">5. Go-To-Market (GTM) Strategy</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-lg border border-agri-200 bg-agri-50 p-4">
-                  <span className="text-xs font-mono text-agri-700 font-bold uppercase">
-                    Crop Salvage Value
-                  </span>
-                  <div className="text-2xl font-black text-slate-900 mt-1">$480 – $750 / acre</div>
-                  <p className="text-xs text-slate-600 mt-1">
-                    Early blight triage protects 140+ acres in Sector 4B, generating $32,400 in net
-                    salvaged crop yield in a single outbreak cycle.
+                <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-agri-600 text-[10px] font-bold text-white">1</span>
+                    <h3 className="font-bold text-slate-900 text-xs">Ag-Retailer &amp; Co-op Channels</h3>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-600">
+                    Partner with regional agricultural retailer networks (CHS, Nutrien Ag Solutions, farmer co-ops) who already supply our ICP. Retailers earn a 15% recurring affiliate margin while improving chemical application accuracy.
                   </p>
                 </div>
 
-                <div className="rounded-lg border border-agri-200 bg-agri-50 p-4">
-                  <span className="text-xs font-mono text-agri-700 font-bold uppercase">
-                    Chemical Input Savings
-                  </span>
-                  <div className="text-2xl font-black text-agri-600 mt-1">34% Saved</div>
-                  <p className="text-xs text-slate-600 mt-1">
-                    Surgical variable-rate micro-spraying reduces broadcast chemical costs by
-                    $18,000–$42,000 annually per farm.
+                <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-agri-600 text-[10px] font-bold text-white">2</span>
+                    <h3 className="font-bold text-slate-900 text-xs">Drone Service Providers (DSPs)</h3>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-600">
+                    Turnkey API integration for commercial ag-drone pilots. Pilots fly standard survey missions and bundle CropEye's automated 5-stage pathology report into premium aerial scouting packages.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-agri-600 text-[10px] font-bold text-white">3</span>
+                    <h3 className="font-bold text-slate-900 text-xs">High-Value Specialty Land &amp; Expand</h3>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-600">
+                    Initial direct sales focused in high-density potato and tomato regions (Idaho, Washington, Wisconsin, Central Valley) where early/late blight carries $50k+ single-outbreak write-down risk.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-agri-600 text-[10px] font-bold text-white">4</span>
+                    <h3 className="font-bold text-slate-900 text-xs">Crop Insurance &amp; ESG Alignment</h3>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-600">
+                    Alliance with agricultural insurers offering policy premium discounts for farms utilizing timestamped, GPS-verified computer vision scouting to reduce catastrophic write-down claims.
                   </p>
                 </div>
               </div>
@@ -232,47 +251,30 @@ export default function BusinessProposalPage() {
 
           {activeTab === 6 && (
             <div className="space-y-4 text-sm text-slate-700">
-              <h2 className="text-xl font-bold text-slate-900">6. Business Model &amp; Unit Economics</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="rounded-lg border border-slate-200 p-4">
-                  <span className="text-xs font-mono text-slate-500">GROWER STANDARD</span>
-                  <div className="text-xl font-bold text-slate-900 mt-1">$349 / mo</div>
-                  <p className="text-xs text-slate-500 mt-2">Up to 1,500 managed acres.</p>
-                </div>
-
-                <div className="rounded-lg border-2 border-agri-600 bg-agri-50/50 p-4">
-                  <span className="text-xs font-mono font-bold text-agri-700">
-                    GROWER PRO (FEATURED)
+              <h2 className="text-xl font-bold text-slate-900">6. Product-Market Fit (PMF)</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-lg border border-agri-200 bg-agri-50 p-4">
+                  <span className="text-xs font-mono text-agri-700 font-bold uppercase">
+                    Crop Salvage Value (Indian Standard)
                   </span>
-                  <div className="text-xl font-bold text-slate-900 mt-1">$499 / mo</div>
+                  <div className="text-2xl font-black text-slate-900 mt-1">₹39,800 – ₹62,000 / acre</div>
+                  <div className="text-xs text-slate-500 font-mono">($480 – $750 / acre)</div>
                   <p className="text-xs text-slate-600 mt-2">
-                    Up to 2,500 managed acres, drone telemetry, ISOBUS tractor dispatch.
+                    Early blight triage protects 140+ acres in Sector 4B, generating ₹26.8 Lakhs ($32,400) in net
+                    salvaged harvest value in a single outbreak cycle.
                   </p>
                 </div>
 
-                <div className="rounded-lg border border-slate-200 p-4">
-                  <span className="text-xs font-mono text-slate-500">CUSTOM CONTRACTOR</span>
-                  <div className="text-xl font-bold text-slate-900 mt-1">$1,299 / mo</div>
-                  <p className="text-xs text-slate-500 mt-2">Multi-farm fleet applicator portal.</p>
-                </div>
-              </div>
-
-              <div className="mt-4 p-4 rounded-lg bg-slate-50 border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-                <div>
-                  <span className="text-slate-400 block">CAC</span>
-                  <strong className="text-slate-900">~$1,200</strong>
-                </div>
-                <div>
-                  <span className="text-slate-400 block">ACV</span>
-                  <strong className="text-slate-900">~$6,000</strong>
-                </div>
-                <div>
-                  <span className="text-slate-400 block">LTV:CAC</span>
-                  <strong className="text-agri-700">5.4x</strong>
-                </div>
-                <div>
-                  <span className="text-slate-400 block">Gross Margin</span>
-                  <strong className="text-slate-900">85%</strong>
+                <div className="rounded-lg border border-agri-200 bg-agri-50 p-4">
+                  <span className="text-xs font-mono text-agri-700 font-bold uppercase">
+                    Chemical Input Savings
+                  </span>
+                  <div className="text-2xl font-black text-agri-600 mt-1">34% Saved</div>
+                  <div className="text-xs text-slate-500 font-mono">(₹14.9L – ₹34.8L / yr)</div>
+                  <p className="text-xs text-slate-600 mt-2">
+                    Surgical variable-rate micro-spraying reduces broadcast chemical costs by
+                    ₹15,00,000–₹35,00,000 ($18k–$42k) annually per commercial farm.
+                  </p>
                 </div>
               </div>
             </div>
@@ -280,7 +282,62 @@ export default function BusinessProposalPage() {
 
           {activeTab === 7 && (
             <div className="space-y-4 text-sm text-slate-700">
-              <h2 className="text-xl font-bold text-slate-900">7. Competitive Moat &amp; Defensibility</h2>
+              <h2 className="text-xl font-bold text-slate-900">7. Business Model &amp; Unit Economics</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="rounded-lg border border-slate-200 p-4">
+                  <span className="text-xs font-mono text-slate-500">GROWER STANDARD</span>
+                  <div className="text-xl font-bold text-slate-900 mt-1">₹28,999 / mo</div>
+                  <div className="text-xs text-slate-400 font-mono">($349 / month)</div>
+                  <p className="text-xs text-slate-500 mt-2">Up to 1,500 managed acres.</p>
+                </div>
+
+                <div className="rounded-lg border-2 border-agri-600 bg-agri-50/50 p-4">
+                  <span className="text-xs font-mono font-bold text-agri-700">
+                    GROWER PRO (FEATURED)
+                  </span>
+                  <div className="text-xl font-bold text-slate-900 mt-1">₹39,999 / mo</div>
+                  <div className="text-xs text-agri-700 font-mono font-bold">($499 / month)</div>
+                  <p className="text-xs text-slate-600 mt-2">
+                    Up to 3,500 managed acres, drone telemetry, ISOBUS tractor dispatch.
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-slate-200 p-4">
+                  <span className="text-xs font-mono text-slate-500">COMMERCIAL ENTERPRISE</span>
+                  <div className="text-xl font-bold text-slate-900 mt-1">₹49,999 / mo</div>
+                  <div className="text-xs text-slate-400 font-mono">($599 / month)</div>
+                  <p className="text-xs text-slate-500 mt-2">Up to 5,000 managed acres, multi-farm fleet portal.</p>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 rounded-lg bg-slate-50 border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+                <div>
+                  <span className="text-slate-400 block">CAC</span>
+                  <strong className="text-slate-900">₹99,000</strong>
+                  <span className="text-[10px] text-slate-400 block">($1,200)</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block">ACV</span>
+                  <strong className="text-slate-900">₹4,95,000</strong>
+                  <span className="text-[10px] text-slate-400 block">($6,000)</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block">LTV:CAC</span>
+                  <strong className="text-agri-700">5.25x</strong>
+                  <span className="text-[10px] text-slate-400 block">(Industry: 3.0x)</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block">Gross Margin</span>
+                  <strong className="text-slate-900">85%</strong>
+                  <span className="text-[10px] text-slate-400 block">(Client-side WebGL)</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 8 && (
+            <div className="space-y-4 text-sm text-slate-700">
+              <h2 className="text-xl font-bold text-slate-900">8. Competitive Moat &amp; Defensibility</h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs font-mono text-left">
                   <thead>
@@ -305,7 +362,7 @@ export default function BusinessProposalPage() {
                       <td className="py-2">Lab culture</td>
                       <td className="py-2">❌ No (Greenness only)</td>
                       <td className="py-2">Partial (Weeds only)</td>
-                      <td className="py-2 text-agri-700 font-bold">✅ 35+ Fungal/Pest Lesions</td>
+                      <td className="py-2 text-agri-700 font-bold">✅ 38 PlantVillage Classes</td>
                     </tr>
                     <tr>
                       <td className="py-2 font-bold text-slate-900">Hardware Barrier</td>
@@ -320,6 +377,13 @@ export default function BusinessProposalPage() {
                       <td className="py-2">❌ No</td>
                       <td className="py-2">Machine injection</td>
                       <td className="py-2 text-agri-700 font-bold">✅ Instant EPA Tank-Mix</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 font-bold text-slate-900">Cost Barrier</td>
+                      <td className="py-2">$80–$150 / test</td>
+                      <td className="py-2">$5–$15 / acre</td>
+                      <td className="py-2">Heavy Capital Capex</td>
+                      <td className="py-2 text-agri-700 font-bold">₹28,999–₹49,999 / mo ($349–$599/mo) SaaS</td>
                     </tr>
                   </tbody>
                 </table>

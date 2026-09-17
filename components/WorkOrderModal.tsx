@@ -64,11 +64,11 @@ export default function WorkOrderModal({
             </div>
             <div>
               <span className="text-[10px] uppercase font-sans text-slate-400">Boom Width:</span>
-              <div className="font-bold text-slate-900">120 ft (PWM)</div>
+              <div className="font-bold text-slate-900">36.5 m (120 ft) Boom (PWM)</div>
             </div>
             <div>
               <span className="text-[10px] uppercase font-sans text-slate-400">Nozzle Pressure:</span>
-              <div className="font-bold text-slate-900">42 PSI Coarse</div>
+              <div className="font-bold text-slate-900">2.9 bar (42 PSI) Coarse</div>
             </div>
           </div>
 
@@ -101,8 +101,8 @@ export default function WorkOrderModal({
               <span>Total Concentrate: {ticket.prescription.totalChemicalVolume}</span>
             </div>
             <div className="flex justify-between text-slate-600 text-[11px]">
-              <span>Carrier Water: {ticket.prescription.waterVolumePerAcre} (2,800 gal total)</span>
-              <span>Chemical Cost: ${ticket.prescription.estimatedChemicalCostUsd.toLocaleString()}</span>
+              <span>Carrier Water: {ticket.prescription.waterVolumePerAcre} (21,000 L total solution)</span>
+              <span>Chemical Cost: ₹{Math.round(ticket.prescription.estimatedChemicalCostUsd * 83).toLocaleString()} (${ticket.prescription.estimatedChemicalCostUsd.toLocaleString()})</span>
             </div>
           </div>
 
@@ -110,10 +110,10 @@ export default function WorkOrderModal({
           <div className="flex items-center justify-between rounded-lg border border-agri-200 bg-agri-50 p-3 text-agri-900">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-agri-600" />
-              <span>EPA Wind Buffer Verified (&lt;10 mph threshold)</span>
+              <span>CIBRC / EPA Wind Buffer Verified (&lt;16 km/h threshold)</span>
             </div>
             <div className="font-bold">
-              ${ticket.estimatedCropSavedUsd.toLocaleString()} Crop Value Protected
+              ₹{Math.round(ticket.estimatedCropSavedUsd * 83).toLocaleString()} (${ticket.estimatedCropSavedUsd.toLocaleString()}) Value Protected
             </div>
           </div>
         </div>

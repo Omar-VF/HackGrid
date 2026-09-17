@@ -159,7 +159,7 @@ export async function executeAutonomousWorkflow(
       3,
       "completed",
       s3Duration,
-      `Weather: ${weather.temperatureC}°C, ${weather.relativeHumidity}% RH, Wind ${weather.windSpeedMph} mph | Spore Risk: ${weather.sporeSpreadRisk}`
+      `Weather: ${weather.temperatureC}°C, ${weather.relativeHumidity}% RH, Wind ${(weather.windSpeedMph * 1.60934).toFixed(1)} km/h | Spore Risk: ${weather.sporeSpreadRisk}`
     );
 
     // ------------------------------------------------------------------------

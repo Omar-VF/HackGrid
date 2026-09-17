@@ -40,10 +40,10 @@ export default function ROICounter({
             Protected Yield
           </span>
           <div className="mt-1 text-2xl font-black tracking-tight text-slate-900">
-            ${cropSavedUsd.toLocaleString()}
+            ₹{Math.round(cropSavedUsd * 83).toLocaleString()}
           </div>
           <p className="mt-0.5 text-[11px] font-mono text-slate-500">
-            Basis: $14.50/cwt Russet
+            (${cropSavedUsd.toLocaleString()} USD • ₹1,200/quintal)
           </p>
         </div>
 

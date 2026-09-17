@@ -91,7 +91,7 @@ export default function TelemetryBar({
             <span className="flex items-center gap-1 text-slate-600">
               <Wind className="h-3.5 w-3.5 text-slate-500" />
               <strong className="text-slate-900 font-semibold">
-                Wind: {weather.windSpeedMph.toFixed(1)} mph NW
+                Wind: {(weather.windSpeedMph * 1.60934).toFixed(1)} km/h NW
               </strong>
             </span>
           </div>

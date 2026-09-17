@@ -18,9 +18,11 @@ export interface PathogenChemicalRecipe {
   epaRegNumber: string;
   activeIngredient: string;
   ratePerAcreValue: number;
-  rateUnit: "pt" | "lb" | "fl_oz" | "none";
+  rateUnit: "mL" | "g" | "L" | "kg" | "none";
   rateDescription: string;
-  waterGalPerAcre: number;
+  waterLitersPerAcre: number;
+  waterGalPerAcre?: number;
+  unitCostInr: number;
   unitCostUsd: number; // Cost per rate unit
   cropValuePerAcreUsd: number;
   typicalLossRatePct: number;
@@ -30,36 +32,39 @@ export const AGRONOMIC_FORMULARY: Record<PathogenId, PathogenChemicalRecipe> = {
   potato_late_blight: {
     chemicalName: "Chlorothalonil 720 SC",
     epaRegNumber: "EPA Reg. #50534-188",
-    activeIngredient: "Chlorothalonil (54.0% w/w)",
-    ratePerAcreValue: 1.5,
-    rateUnit: "pt",
-    rateDescription: "1.5 pt / acre",
-    waterGalPerAcre: 20,
-    unitCostUsd: 10.19, // ~$15.28 / acre
+    activeIngredient: "Chlorothalonil (54.0% w/w SC)",
+    ratePerAcreValue: 700,
+    rateUnit: "mL",
+    rateDescription: "700 mL / acre (1.75 L / ha)",
+    waterLitersPerAcre: 150,
+    unitCostInr: 1.85, // ₹1,295 / acre
+    unitCostUsd: 0.022, // ~$15.40 / acre
     cropValuePerAcreUsd: 3600,
     typicalLossRatePct: 0.35,
   },
   tomato_early_blight: {
     chemicalName: "Mancozeb 75DF",
     epaRegNumber: "EPA Reg. #70506-63",
-    activeIngredient: "Mancozeb (75.0% w/w)",
-    ratePerAcreValue: 2.0,
-    rateUnit: "lb",
-    rateDescription: "2.0 lb / acre",
-    waterGalPerAcre: 25,
-    unitCostUsd: 7.25, // ~$14.50 / acre
+    activeIngredient: "Mancozeb (75.0% w/w WP)",
+    ratePerAcreValue: 800,
+    rateUnit: "g",
+    rateDescription: "800 g / acre (2.0 kg / ha)",
+    waterLitersPerAcre: 150,
+    unitCostInr: 1.45, // ₹1,160 / acre
+    unitCostUsd: 0.0175, // ~$14.00 / acre
     cropValuePerAcreUsd: 4200,
     typicalLossRatePct: 0.25,
   },
   corn_rust: {
     chemicalName: "Azoxystrobin 2.08 SC (Quadris)",
     epaRegNumber: "EPA Reg. #100-1098",
-    activeIngredient: "Azoxystrobin (22.9% w/w)",
-    ratePerAcreValue: 6.0,
-    rateUnit: "fl_oz",
-    rateDescription: "6.0 fl oz / acre",
-    waterGalPerAcre: 15,
-    unitCostUsd: 2.85, // ~$17.10 / acre
+    activeIngredient: "Azoxystrobin (22.9% w/w SC)",
+    ratePerAcreValue: 200,
+    rateUnit: "mL",
+    rateDescription: "200 mL / acre (500 mL / ha)",
+    waterLitersPerAcre: 150,
+    unitCostInr: 6.8, // ₹1,360 / acre
+    unitCostUsd: 0.082, // ~$16.40 / acre
     cropValuePerAcreUsd: 980,
     typicalLossRatePct: 0.18,
   },
@@ -67,11 +72,12 @@ export const AGRONOMIC_FORMULARY: Record<PathogenId, PathogenChemicalRecipe> = {
     chemicalName: "Headline AMP (Pyraclostrobin + Metconazole)",
     epaRegNumber: "EPA Reg. #7969-291",
     activeIngredient: "Pyraclostrobin (13.6%) + Metconazole (5.1%)",
-    ratePerAcreValue: 10.0,
-    rateUnit: "fl_oz",
-    rateDescription: "10.0 fl oz / acre",
-    waterGalPerAcre: 20,
-    unitCostUsd: 2.10, // ~$21.00 / acre
+    ratePerAcreValue: 300,
+    rateUnit: "mL",
+    rateDescription: "300 mL / acre (750 mL / ha)",
+    waterLitersPerAcre: 150,
+    unitCostInr: 5.5, // ₹1,650 / acre
+    unitCostUsd: 0.066, // ~$19.80 / acre
     cropValuePerAcreUsd: 980,
     typicalLossRatePct: 0.25,
   },
@@ -79,23 +85,25 @@ export const AGRONOMIC_FORMULARY: Record<PathogenId, PathogenChemicalRecipe> = {
     chemicalName: "Tilt Fungicide (Propiconazole)",
     epaRegNumber: "EPA Reg. #100-617",
     activeIngredient: "Propiconazole (41.8% w/w)",
-    ratePerAcreValue: 4.0,
-    rateUnit: "fl_oz",
-    rateDescription: "4.0 fl oz / acre",
-    waterGalPerAcre: 15,
-    unitCostUsd: 3.40, // ~$13.60 / acre
+    ratePerAcreValue: 200,
+    rateUnit: "mL",
+    rateDescription: "200 mL / acre (500 mL / ha)",
+    waterLitersPerAcre: 150,
+    unitCostInr: 5.2, // ₹1,040 / acre
+    unitCostUsd: 0.063, // ~$12.60 / acre
     cropValuePerAcreUsd: 620,
     typicalLossRatePct: 0.28,
   },
   apple_scab: {
     chemicalName: "Captan 80 WDG",
     epaRegNumber: "EPA Reg. #66222-65",
-    activeIngredient: "Captan (80.0% w/w)",
-    ratePerAcreValue: 2.5,
-    rateUnit: "lb",
-    rateDescription: "2.5 lb / acre",
-    waterGalPerAcre: 50,
-    unitCostUsd: 7.40, // ~$18.50 / acre
+    activeIngredient: "Captan (80.0% w/w WDG)",
+    ratePerAcreValue: 1000,
+    rateUnit: "g",
+    rateDescription: "1.0 kg / acre (2.5 kg / ha)",
+    waterLitersPerAcre: 200,
+    unitCostInr: 1.5, // ₹1,500 / acre
+    unitCostUsd: 0.018, // ~$18.00 / acre
     cropValuePerAcreUsd: 5400,
     typicalLossRatePct: 0.30,
   },
@@ -103,11 +111,12 @@ export const AGRONOMIC_FORMULARY: Record<PathogenId, PathogenChemicalRecipe> = {
     chemicalName: "Inspire Super (Difenoconazole + Cyprodinil)",
     epaRegNumber: "EPA Reg. #100-1317",
     activeIngredient: "Difenoconazole (8.4%) + Cyprodinil (24.1%)",
-    ratePerAcreValue: 12.0,
-    rateUnit: "fl_oz",
-    rateDescription: "12.0 fl oz / acre",
-    waterGalPerAcre: 50,
-    unitCostUsd: 1.85, // ~$22.20 / acre
+    ratePerAcreValue: 150,
+    rateUnit: "mL",
+    rateDescription: "150 mL / acre (375 mL / ha)",
+    waterLitersPerAcre: 200,
+    unitCostInr: 9.5, // ₹1,425 / acre
+    unitCostUsd: 0.115, // ~$17.25 / acre
     cropValuePerAcreUsd: 5400,
     typicalLossRatePct: 0.28,
   },
@@ -115,34 +124,37 @@ export const AGRONOMIC_FORMULARY: Record<PathogenId, PathogenChemicalRecipe> = {
     chemicalName: "Myclobutanil 20EW (Rally)",
     epaRegNumber: "EPA Reg. #62719-410",
     activeIngredient: "Myclobutanil (19.7% w/w)",
-    ratePerAcreValue: 5.0,
-    rateUnit: "fl_oz",
-    rateDescription: "5.0 fl oz / acre",
-    waterGalPerAcre: 20,
-    unitCostUsd: 3.10, // ~$15.50 / acre
+    ratePerAcreValue: 200,
+    rateUnit: "g",
+    rateDescription: "200 g / acre (500 g / ha)",
+    waterLitersPerAcre: 150,
+    unitCostInr: 6.0, // ₹1,200 / acre
+    unitCostUsd: 0.072, // ~$14.40 / acre
     cropValuePerAcreUsd: 2800,
     typicalLossRatePct: 0.20,
   },
   non_plant_detected: {
     chemicalName: "No Chemical Application (Non-Crop Image)",
-    epaRegNumber: "EPA Exempt / Invalid Target",
+    epaRegNumber: "CIBRC / EPA Exempt / Invalid Target",
     activeIngredient: "None (Non-Agricultural Subject)",
     ratePerAcreValue: 0.0,
     rateUnit: "none",
-    rateDescription: "0.0 pt / acre",
-    waterGalPerAcre: 0,
+    rateDescription: "0.0 mL / acre",
+    waterLitersPerAcre: 0,
+    unitCostInr: 0,
     unitCostUsd: 0,
     cropValuePerAcreUsd: 0,
     typicalLossRatePct: 0.0,
   },
   healthy: {
     chemicalName: "No Chemical Intervention Required",
-    epaRegNumber: "EPA Exempt / Natural Foliage",
+    epaRegNumber: "CIBRC / EPA Exempt / Natural Foliage",
     activeIngredient: "None (Healthy Crop Canopy)",
     ratePerAcreValue: 0.0,
     rateUnit: "none",
-    rateDescription: "0.0 pt / acre",
-    waterGalPerAcre: 0,
+    rateDescription: "0.0 mL / acre",
+    waterLitersPerAcre: 0,
+    unitCostInr: 0,
     unitCostUsd: 0,
     cropValuePerAcreUsd: 3500,
     typicalLossRatePct: 0.0,
@@ -150,39 +162,37 @@ export const AGRONOMIC_FORMULARY: Record<PathogenId, PathogenChemicalRecipe> = {
 };
 
 /**
- * Calculates total chemical volume in user-friendly units (Gallons or Pounds)
+ * Calculates total chemical volume in Indian Standard units (Litres or Kilograms)
  */
 export function formatChemicalTotalVolume(
   recipe: PathogenChemicalRecipe,
   acreage: number
 ): string {
   if (recipe.ratePerAcreValue === 0) {
-    return "0.0 Gallons (Zero Spray)";
+    return "0.0 Litres (Zero Spray)";
   }
 
   const totalUnits = recipe.ratePerAcreValue * acreage;
 
-  if (recipe.rateUnit === "pt") {
-    // 8 pints = 1 gallon
-    const gallons = totalUnits / 8;
-    return `${gallons.toFixed(1)} Gallons (${totalUnits.toFixed(0)} Pints)`;
+  if (recipe.rateUnit === "mL") {
+    const liters = totalUnits / 1000;
+    return `${liters.toFixed(1)} Litres (${totalUnits.toLocaleString()} mL)`;
   }
 
-  if (recipe.rateUnit === "fl_oz") {
-    // 128 fl oz = 1 gallon
-    const gallons = totalUnits / 128;
-    return `${gallons.toFixed(1)} Gallons (${totalUnits.toFixed(0)} Fl Oz)`;
+  if (recipe.rateUnit === "g") {
+    const kgs = totalUnits / 1000;
+    return `${kgs.toFixed(1)} kg (${totalUnits.toLocaleString()} g)`;
   }
 
-  if (recipe.rateUnit === "lb") {
-    return `${totalUnits.toFixed(0)} Lbs (Dry Flowable)`;
+  if (recipe.rateUnit === "L" || recipe.rateUnit === "kg") {
+    return `${totalUnits.toFixed(1)} ${recipe.rateUnit === "L" ? "Litres" : "kg"}`;
   }
 
   return `${totalUnits.toFixed(1)} Units`;
 }
 
 /**
- * Deterministically evaluates EPA prescription dosage, safety threshold, and cost.
+ * Deterministically evaluates EPA / CIBRC prescription dosage, safety threshold, and cost.
  */
 export function calculatePrescription(
   params: PrescriptionCalculationParams
@@ -190,10 +200,11 @@ export function calculatePrescription(
   const { pathogenId, acreage, windSpeedMph } = params;
   const recipe = AGRONOMIC_FORMULARY[pathogenId] || AGRONOMIC_FORMULARY.healthy;
 
-  // EPA Standard: Wind speeds > 10.0 mph violate application label buffers
+  // CIBRC & EPA Standard: Wind speeds > 16.0 km/h (10.0 mph) violate application label buffers
   const isHealthy = pathogenId === "healthy";
   const isNonPlant = pathogenId === "non_plant_detected";
   const safeToSpray = isNonPlant ? false : isHealthy ? true : windSpeedMph <= 10.0;
+  const windSpeedKmh = (windSpeedMph * 1.60934).toFixed(1);
 
   let windBufferNotice = "";
   if (isNonPlant) {
@@ -201,9 +212,9 @@ export function calculatePrescription(
   } else if (isHealthy) {
     windBufferNotice = "Field foliage meets health thresholds. Zero chemical application required.";
   } else if (!safeToSpray) {
-    windBufferNotice = `HOLD APPLICATION: Wind speed of ${windSpeedMph.toFixed(1)} mph exceeds EPA maximum limit (10.0 mph). Risk of off-target drift into aquatic buffer zones.`;
+    windBufferNotice = `HOLD APPLICATION: Wind speed of ${windSpeedKmh} km/h (${windSpeedMph.toFixed(1)} mph) exceeds CIBRC / EPA maximum limit (16.0 km/h / 10.0 mph). Risk of off-target drift into aquatic buffer zones.`;
   } else {
-    windBufferNotice = `Wind speed ${windSpeedMph.toFixed(1)} mph (< 10.0 mph EPA limit). Compliant with aquatic buffer zones.`;
+    windBufferNotice = `Wind speed ${windSpeedKmh} km/h (${windSpeedMph.toFixed(1)} mph) < 16 km/h (10 mph) safe limit. Compliant with aquatic buffer zones.`;
   }
 
   const totalChemicalVolume = formatChemicalTotalVolume(recipe, acreage);
@@ -215,7 +226,7 @@ export function calculatePrescription(
     epaRegNumber: recipe.epaRegNumber,
     activeIngredient: recipe.activeIngredient,
     dosagePerAcre: recipe.rateDescription,
-    waterVolumePerAcre: `${recipe.waterGalPerAcre} gal / acre`,
+    waterVolumePerAcre: `${recipe.waterLitersPerAcre} L / acre`,
     safeToSpray,
     windBufferNotice,
     totalChemicalVolume,

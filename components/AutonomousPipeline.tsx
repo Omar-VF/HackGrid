@@ -22,7 +22,7 @@ export default function AutonomousPipeline({
     1: 'Tile #4410 • Orthomosaic Sync',
     2: 'Late Blight Confirmed (96.4%)',
     3: '72h Spore Velocity High',
-    4: 'Chlorothalonil 720 SC @ 1.5 pt/ac',
+    4: 'Chlorothalonil 720 SC @ 700 mL/ac',
     5: 'Work-Order #WO-0941 Compiled',
   };
 

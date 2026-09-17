@@ -74,7 +74,7 @@ export default function WorkOrderDispatch({
             Boom Width
           </span>
           <div className="mt-0.5 font-bold text-slate-900">
-            120 ft (Pulse-Width Mod)
+            36.5 m (120 ft) Boom (PWM)
           </div>
         </div>
 
@@ -89,10 +89,10 @@ export default function WorkOrderDispatch({
 
         <div>
           <span className="text-[10px] uppercase text-slate-400 font-sans tracking-wider">
-            Nozzle PSI
+            Nozzle Pressure
           </span>
           <div className="mt-0.5 font-bold text-slate-900">
-            {ticket.diagnostic.pathogenId === 'non_plant_detected' ? '0 PSI • Spray Closed' : '42 PSI • Coarse Droplets'}
+            {ticket.diagnostic.pathogenId === 'non_plant_detected' ? '0 bar • Spray Closed' : '2.9 bar (42 PSI) • Coarse'}
           </div>
         </div>
       </div>

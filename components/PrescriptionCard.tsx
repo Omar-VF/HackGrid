@@ -60,7 +60,7 @@ export default function PrescriptionCard({
             Target Carrier Volume:
           </span>
           <div className="mt-1 font-bold text-slate-900 text-sm">
-            2,800 Gallons Total Solution
+            21,000 Litres Total Solution
           </div>
         </div>
 
@@ -71,7 +71,7 @@ export default function PrescriptionCard({
           <div className="mt-1 font-bold text-agri-700 text-sm">
             {prescription.totalChemicalVolume}{' '}
             <span className="font-normal text-slate-500 text-xs">
-              (${prescription.estimatedChemicalCostUsd.toLocaleString()} input cost)
+              (₹{Math.round(prescription.estimatedChemicalCostUsd * 83).toLocaleString()} / ${prescription.estimatedChemicalCostUsd.toLocaleString()})
             </span>
           </div>
         </div>
@@ -91,7 +91,7 @@ export default function PrescriptionCard({
           }`}
         />
         <span className="font-mono text-[11px]">
-          {prescription.windBufferNotice || '✓ Wind: 6.2 mph (<10 mph threshold). Buffer: 100ft verified.'}
+          {prescription.windBufferNotice || '✓ Wind: 10.0 km/h (<16 km/h threshold). Aquatic buffer: 30m verified.'}
         </span>
       </div>
     </div>

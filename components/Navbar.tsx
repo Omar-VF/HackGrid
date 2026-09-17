@@ -38,10 +38,10 @@ export default function Navbar({ currentRoute = 'landing' }: NavbarProps) {
             Autonomous Pipeline
           </Link>
           <Link
-            href="/#metrics"
+            href="/#impact"
             className="transition hover:text-agri-600 hover:underline underline-offset-4"
           >
-            Impact &amp; Metrics
+            Impact Matrix
           </Link>
           <Link
             href="/#pricing"

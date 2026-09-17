@@ -26,6 +26,7 @@ import { PathogenId } from '@/types/sentinel';
 export default function HomePage() {
   const [selectedCrop, setSelectedCrop] = useState<PathogenId>('potato_late_blight');
   const [viewMode, setViewMode] = useState<'hud' | 'mask'>('hud');
+  const [currency, setCurrency] = useState<'INR' | 'USD'>('INR');
 
   const diagnostic = SAMPLE_DIAGNOSTICS[selectedCrop] || SAMPLE_DIAGNOSTICS.potato_late_blight;
   const prescription = calculatePrescription({
@@ -305,7 +306,9 @@ export default function HomePage() {
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="text-slate-500">Prevented Crop Loss:</span>
                   <strong className="text-agri-700 font-bold text-sm">
-                    ${estimatedCropSavedUsd.toLocaleString()}
+                    {currency === 'INR'
+                      ? `₹${Math.round(estimatedCropSavedUsd * 83).toLocaleString()}`
+                      : `$${estimatedCropSavedUsd.toLocaleString()}`}
                   </strong>
                 </div>
 
@@ -320,47 +323,6 @@ export default function HomePage() {
                   Full 5-stage automated dispatch &amp; tractor ISO ticket available in cockpit
                 </p>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 4-Metric Verified Performance Bar                                         */}
-      {/* ========================================================================= */}
-      <section className="w-full border-y border-slate-200 bg-white py-8" id="metrics">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-            <div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
-                38 Classes
-              </div>
-              <div className="mt-1 text-xs font-semibold text-slate-700">PATHOLOGY COVERAGE</div>
-              <div className="text-[11px] text-slate-500">14 major commercial crop species</div>
-            </div>
-
-            <div>
-              <div className="text-2xl sm:text-3xl font-black text-agri-600 font-mono">
-                &lt; 150 ms
-              </div>
-              <div className="mt-1 text-xs font-semibold text-slate-700">INFERENCE SPEED</div>
-              <div className="text-[11px] text-slate-500">Client-side WebGL / TensorFlow.js</div>
-            </div>
-
-            <div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
-                34% Cut
-              </div>
-              <div className="mt-1 text-xs font-semibold text-slate-700">CHEMICAL REDUCTION</div>
-              <div className="text-[11px] text-slate-500">Targeted VRA spot-spraying vs drenching</div>
-            </div>
-
-            <div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
-                $34,200
-              </div>
-              <div className="mt-1 text-xs font-semibold text-slate-700">AVG OUTBREAK SAVINGS</div>
-              <div className="text-[11px] text-slate-500">Prevented late-blight rot per 140 acres</div>
             </div>
           </div>
         </div>
@@ -468,25 +430,211 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================================= */}
+      {/* Dedicated Agronomic & Economic Impact Matrix Section                      */}
+      {/* ========================================================================= */}
+      <section className="w-full border-y border-slate-200 bg-slate-50 py-16" id="impact">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-10">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-agri-700">
+              OPERATIONAL BENCHMARK • 10x FARM ROI
+            </span>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+              Agronomic &amp; Economic Impact Matrix
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-slate-600">
+              Quantified chemical reduction, diagnostic speed, and financial yield protection comparing
+              traditional farm methods with CropEye&apos;s autonomous defense.
+            </p>
+          </div>
+
+          {/* 4-Metric Verified Performance Bar */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 text-center mb-10">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs">
+              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
+                38 Classes
+              </div>
+              <div className="mt-1 text-xs font-semibold text-slate-700">PATHOLOGY COVERAGE</div>
+              <div className="text-[11px] text-slate-500">14 commercial crop species</div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs">
+              <div className="text-2xl sm:text-3xl font-black text-agri-600 font-mono">
+                &lt; 150 ms
+              </div>
+              <div className="mt-1 text-xs font-semibold text-slate-700">INFERENCE SPEED</div>
+              <div className="text-[11px] text-slate-500">Client-side WebGL / TF.js</div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs">
+              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
+                34% Cut
+              </div>
+              <div className="mt-1 text-xs font-semibold text-slate-700">CHEMICAL REDUCTION</div>
+              <div className="text-[11px] text-slate-500">Targeted VRA spot-spraying</div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs">
+              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
+                {currency === 'INR' ? '₹28.4 Lakhs' : '$34,200'}
+              </div>
+              <div className="mt-1 text-xs font-semibold text-slate-700">AVG OUTBREAK SAVINGS</div>
+              <div className="text-[11px] text-slate-500">Per 140-acre sector</div>
+            </div>
+          </div>
+
+          {/* Comparative Impact Matrix Table */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-agri-600"></span>
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-700">
+                  Comprehensive Defense Benchmark Matrix
+                </span>
+              </div>
+              <span className="text-[11px] font-mono text-slate-400 hidden sm:inline-block">
+                COMMERCIAL FARM SCALE (500–5,000 ACRES)
+              </span>
+            </div>
+
+            <div className="overflow-x-auto mt-4">
+              <table className="w-full text-xs font-sans text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px] font-mono">
+                    <th className="py-3 px-3">Operational Capability</th>
+                    <th className="py-3 px-3">Agronomic Testing Labs</th>
+                    <th className="py-3 px-3">Satellite NDVI (Sentinel-2)</th>
+                    <th className="py-3 px-3">OEM Smart Rigs (John Deere)</th>
+                    <th className="py-3 px-3 bg-agri-50 text-agri-800 font-bold border-x border-agri-200">
+                      CropEye Autonomous Defense
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  <tr>
+                    <td className="py-3 px-3 font-semibold text-slate-900">Diagnosis Turnaround</td>
+                    <td className="py-3 px-3 text-rose-600">5–10 Days (spores spread)</td>
+                    <td className="py-3 px-3 text-slate-500">3–5 Days (orbital pass)</td>
+                    <td className="py-3 px-3 text-slate-800">Real-time</td>
+                    <td className="py-3 px-3 bg-agri-50/70 text-agri-800 font-bold border-x border-agri-200">
+                      &lt; 2 Seconds (Client-Side WebGL)
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-3 font-semibold text-slate-900">Pathology Classification</td>
+                    <td className="py-3 px-3">Lab culture plating</td>
+                    <td className="py-3 px-3 text-rose-600">❌ None (Greenness only)</td>
+                    <td className="py-3 px-3 text-amber-600">Weed vs. Crop only</td>
+                    <td className="py-3 px-3 bg-agri-50/70 text-agri-800 font-bold border-x border-agri-200">
+                      ✅ 38 PlantVillage Pathologies + Boxes
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-3 font-semibold text-slate-900">Prescription Formulation</td>
+                    <td className="py-3 px-3">Static paper lab report</td>
+                    <td className="py-3 px-3 text-rose-600">❌ None</td>
+                    <td className="py-3 px-3">Chemical injection</td>
+                    <td className="py-3 px-3 bg-agri-50/70 text-agri-800 font-bold border-x border-agri-200">
+                      ✅ Instant CIBRC/EPA Tank-Mix &amp; ISO Ticket
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-3 font-semibold text-slate-900">Chemical Waste Cut</td>
+                    <td className="py-3 px-3 text-rose-600">0% (defensive blanket spray)</td>
+                    <td className="py-3 px-3 text-rose-600">0% (blind drenching)</td>
+                    <td className="py-3 px-3 text-slate-800">~20% (weed spot-spray)</td>
+                    <td className="py-3 px-3 bg-agri-50/70 text-agri-800 font-bold border-x border-agri-200">
+                      ✅ 34% Verified Input Reduction
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-3 font-semibold text-slate-900">Live Weather Drift Lock</td>
+                    <td className="py-3 px-3 text-rose-600">❌ Manual human guesswork</td>
+                    <td className="py-3 px-3 text-rose-600">❌ None</td>
+                    <td className="py-3 px-3">Mechanical boom sensors</td>
+                    <td className="py-3 px-3 bg-agri-50/70 text-agri-800 font-bold border-x border-agri-200">
+                      ✅ Live 16 km/h (10 mph) Regulatory Lock
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-3 font-semibold text-slate-900">Hardware Investment</td>
+                    <td className="py-3 px-3">Mail-in sampling kit</td>
+                    <td className="py-3 px-3">None (Satellite)</td>
+                    <td className="py-3 px-3 text-rose-600">₹2.5 Cr+ ($250k+ Rig Capex)</td>
+                    <td className="py-3 px-3 bg-agri-50/70 text-agri-800 font-bold border-x border-agri-200">
+                      ✅ Hardware-Agnostic (Any Drone/Phone)
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-3 font-semibold text-slate-900">Commercial Pricing</td>
+                    <td className="py-3 px-3">₹6,000–₹12,000 / sample</td>
+                    <td className="py-3 px-3">₹4L–₹12L / yr ($5–$15/ac)</td>
+                    <td className="py-3 px-3 text-rose-600">Prohibitive Machinery Capex</td>
+                    <td className="py-3 px-3 bg-agri-50/70 text-agri-800 font-bold border-x border-agri-200">
+                      ✅ ₹28,999–₹49,999 / mo ($349–$599/mo) SaaS
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-500">
+              <div className="flex items-center gap-1.5 text-agri-700 font-semibold">
+                <Check className="h-4 w-4 stroke-[3]" />
+                <span>10x Financial ROI: One prevented late-blight rot covers multiple years of software.</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-slate-600">
+                <ShieldCheck className="h-4 w-4 text-agri-600" />
+                <span>Zero Capex: Operates with existing farm tractors via ISO XML work-orders.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
       {/* SaaS Pricing Section: Commercial Grower Plans                             */}
       {/* ========================================================================= */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 text-center" id="pricing">
-        <div className="text-center max-w-3xl mx-auto mb-10">
+        <div className="text-center max-w-3xl mx-auto mb-8">
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-agri-700">
-            SMALL BUSINESS B2B SAAS
+            SMALL BUSINESS B2B SAAS • COMMERCIAL FARMS
           </span>
           <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
             Commercial Farm Plans &amp; Pricing
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-600">
             Tailored specifically for commercial family farms (500 to 5,000 acres). One prevented
-            outbreak pays for an entire year of CropEye.
+            outbreak pays for multiple years of CropEye.
           </p>
+
+          {/* Interactive Currency Switcher */}
+          <div className="mt-6 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-1 shadow-xs">
+            <button
+              onClick={() => setCurrency('INR')}
+              className={`rounded-md px-3.5 py-1.5 text-xs font-bold transition ${
+                currency === 'INR'
+                  ? 'bg-agri-600 text-white shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              ₹ INR (Indian Standard)
+            </button>
+            <button
+              onClick={() => setCurrency('USD')}
+              className={`rounded-md px-3.5 py-1.5 text-xs font-bold transition ${
+                currency === 'USD'
+                  ? 'bg-agri-600 text-white shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              $ USD (Global B2B)
+            </button>
+          </div>
         </div>
 
-        <div className="mx-auto max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+        <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6 text-left">
           {/* Plan 1: Grower Standard */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-7 shadow-xs flex flex-col justify-between">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
@@ -498,25 +646,27 @@ export default function HomePage() {
               </div>
 
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-4xl font-black text-slate-900">$349</span>
-                <span className="text-sm text-slate-500 font-medium">/ month</span>
+                <span className="text-3xl font-black text-slate-900">
+                  {currency === 'INR' ? '₹28,999' : '$349'}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">/ month</span>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Billed annually ($4,188/yr) for commercial operations.
+              <p className="text-[11px] text-slate-500 mt-1">
+                {currency === 'INR' ? 'Billed annually (₹3,47,988/yr)' : 'Billed annually ($4,188/yr)'} for commercial growers.
               </p>
 
-              <ul className="mt-6 space-y-2.5 text-xs text-slate-700">
+              <ul className="mt-5 space-y-2 text-xs text-slate-700">
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
                   <span>Unlimited smartphone foliar scans</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
-                  <span>38-class MobileNetV2 disease classification</span>
+                  <span>38-class MobileNetV2 disease triage</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
-                  <span>Deterministic EPA tank-mix formulations</span>
+                  <span>Deterministic CIBRC / EPA tank-mix ratios</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
@@ -524,15 +674,15 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
-                  <span>Printable ISO work-order tickets</span>
+                  <span>Printable ISO tractor work orders</span>
                 </li>
               </ul>
             </div>
 
-            <div className="mt-8">
+            <div className="mt-6">
               <Link
                 href="/dashboard"
-                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white py-2.5 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
+                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
               >
                 <span>Start Grower Standard</span>
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -541,7 +691,7 @@ export default function HomePage() {
           </div>
 
           {/* Plan 2: Grower Pro (Highlighted) */}
-          <div className="rounded-2xl border-2 border-agri-500 bg-white p-7 shadow-md flex flex-col justify-between relative">
+          <div className="rounded-2xl border-2 border-agri-500 bg-white p-6 shadow-md flex flex-col justify-between relative">
             <div className="absolute -top-3 right-6 rounded-full bg-agri-600 px-3 py-0.5 text-[10px] font-mono font-bold text-white shadow-xs">
               MOST POPULAR
             </div>
@@ -552,26 +702,28 @@ export default function HomePage() {
                   GROWER PRO
                 </span>
                 <span className="rounded bg-agri-50 px-2 py-0.5 text-[10px] font-mono font-bold text-agri-800">
-                  Up to 4,000 Acres
+                  Up to 3,500 Acres
                 </span>
               </div>
 
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-4xl font-black text-slate-900">$599</span>
-                <span className="text-sm text-slate-500 font-medium">/ month</span>
+                <span className="text-3xl font-black text-slate-900">
+                  {currency === 'INR' ? '₹39,999' : '$499'}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">/ month</span>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Billed annually ($7,188/yr) for commercial operations.
+              <p className="text-[11px] text-slate-500 mt-1">
+                {currency === 'INR' ? 'Billed annually (₹4,79,988/yr)' : 'Billed annually ($5,988/yr)'} for commercial growers.
               </p>
 
-              <ul className="mt-6 space-y-2.5 text-xs text-slate-700">
+              <ul className="mt-5 space-y-2 text-xs text-slate-700">
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
                   <span><strong>All Grower Standard features</strong></span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
-                  <span>Autonomous drone batch orthomosaic processing</span>
+                  <span>Autonomous drone batch orthomosaic sync</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
@@ -583,17 +735,74 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
-                  <span>Botanical RAG vector retrieval audit trail</span>
+                  <span>Botanical 32-D RAG vector audit trail</span>
                 </li>
               </ul>
             </div>
 
-            <div className="mt-8">
+            <div className="mt-6">
               <Link
                 href="/dashboard"
-                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-agri-600 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-agri-700 transition"
+                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-agri-600 py-2 text-xs font-bold text-white shadow-xs hover:bg-agri-700 transition"
               >
                 <span>Launch Grower Pro in Cockpit</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Plan 3: Commercial Enterprise */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                  COMMERCIAL ENTERPRISE
+                </span>
+                <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-mono text-slate-600">
+                  Up to 5,000 Acres
+                </span>
+              </div>
+
+              <div className="mt-4 flex items-baseline gap-1">
+                <span className="text-3xl font-black text-slate-900">
+                  {currency === 'INR' ? '₹49,999' : '$599'}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">/ month</span>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                {currency === 'INR' ? 'Billed annually (₹5,99,988/yr)' : 'Billed annually ($7,188/yr)'} for commercial operations.
+              </p>
+
+              <ul className="mt-5 space-y-2 text-xs text-slate-700">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
+                  <span><strong>All Grower Pro features included</strong></span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
+                  <span>Multi-farm client portfolio portal</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
+                  <span>Unlimited fleet machine dispatch licenses</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
+                  <span>Priority batch drone inference API</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-agri-600 stroke-[3] shrink-0" />
+                  <span>Dedicated agronomist integration support</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="mt-6">
+              <Link
+                href="/dashboard"
+                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
+              >
+                <span>Deploy Commercial Enterprise</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
