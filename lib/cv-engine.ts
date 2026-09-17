@@ -340,12 +340,31 @@ function analyzeImageInBrowser(
         let confidence: number;
         let cropSpecies: string;
 
-        // Botanical foliar morphology and symptom signals
+        // Host Morphology Gate:
+        // Monocot elongated strap blade vs Dicot broadleaf/ovate foliage
         const isCornMorphology = leafElongation > 0.35 || stats.leafAspect > 1.8;
-        const isCornRustSignal = (pustuleDensity > 0.04 && isCornMorphology) || (pustuleDensity > 0.10) || (ragResult.topMatch.pathogenId === "corn_rust" && pustuleDensity > 0.02);
-        const isPotatoLateBlightSignal = (!isCornMorphology && waterSoakedIndex > 0.04) || (ragResult.topMatch.pathogenId === "potato_late_blight" && (waterSoakedIndex > 0.02 || activePathologySum > 0.12));
-        const isTomatoEarlyBlightSignal = (!isCornMorphology && (targetRingIndex > 0.03 || chloroticHaloIndex > 0.05)) || (ragResult.topMatch.pathogenId === "tomato_early_blight" && (targetRingIndex > 0.02 || chloroticHaloIndex > 0.02));
-        const isAppleScabSignal = (!isCornMorphology && velvetyScabIndex > 0.04) || (ragResult.topMatch.pathogenId === "apple_scab" && velvetyScabIndex > 0.02);
+        const isBroadleafMorphology = !isCornMorphology;
+
+        // Strict Botanical Pathology Signals:
+        const isCornRustSignal =
+          isCornMorphology &&
+          (pustuleDensity > 0.03 || ragResult.topMatch.pathogenId === "corn_rust");
+
+        const isPotatoLateBlightSignal =
+          isBroadleafMorphology &&
+          (waterSoakedIndex > 0.03 ||
+            (ragResult.topMatch.pathogenId === "potato_late_blight" && (waterSoakedIndex > 0.015 || activePathologySum > 0.08)));
+
+        const isTomatoEarlyBlightSignal =
+          isBroadleafMorphology &&
+          (targetRingIndex > 0.025 ||
+            chloroticHaloIndex > 0.035 ||
+            (ragResult.topMatch.pathogenId === "tomato_early_blight" && (targetRingIndex > 0.015 || chloroticHaloIndex > 0.02)));
+
+        const isAppleScabSignal =
+          isBroadleafMorphology &&
+          (velvetyScabIndex > 0.025 ||
+            (ragResult.topMatch.pathogenId === "apple_scab" && velvetyScabIndex > 0.015));
 
         if (isCornRustSignal) {
           pathogenId = "corn_rust";
@@ -371,7 +390,7 @@ function analyzeImageInBrowser(
           scientificName = "Venturia inaequalis (Ascomycete)";
           cropSpecies = "Malus domestica (Apple)";
           confidence = Math.min(97.6, Math.max(89.8, ragResult.topMatch.similarityScore));
-        } else if (activePathologySum > 0.18 && ragResult.topMatch.pathogenId !== "healthy") {
+        } else if (activePathologySum > 0.15 && ragResult.topMatch.pathogenId !== "healthy") {
           // RAG Atlas Top Reference Specimen Match
           pathogenId = ragResult.topMatch.pathogenId;
           commonName = ragResult.topMatch.commonName;

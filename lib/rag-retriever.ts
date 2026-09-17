@@ -191,51 +191,60 @@ export function extractFeatureVectorFromPixels(
       hueHistogram[hueBin]++;
 
       // Symptom Detectors (Calibrated against agricultural foliar pathology)
+      // 1. Brilliant Yellow Chlorotic Halo (Alternaria solani / Early Blight)
       const isChloroticHalo =
         r > 115 &&
         g > 110 &&
         b < 70 &&
-        Math.abs(r - g) < 28 &&
-        (r + g) > 2.8 * b;
+        Math.abs(r - g) < 30 &&
+        (r + g) > 2.6 * b;
 
-      const isTargetRing =
-        isChloroticHalo ||
-        (r >= 68 && r <= 105 && g >= 42 && g <= 78 && b <= 48 && Math.abs(r - g * 1.3) < 18);
-
-      // Rust pustules: Cinnamon, orange-brown, or reddish-brown eruptive specks
-      const isPustule =
-        !isTargetRing &&
-        r >= 65 &&
-        b <= 100 &&
-        (
-          (r > g * 1.03 && r > b * 1.18 && (r - g) >= 4) ||
-          (r >= 80 && g <= 115 && b <= 80 && (r - g) >= 8 && (r - b) >= 16) ||
-          (r >= 70 && r <= 160 && g >= 38 && g <= 105 && b <= 68 && (r - g) >= 12 && (r - b) >= 15)
-        );
-
-      // Velvety Olive/Dark Scab Crust (Venturia inaequalis / Apple Scab)
+      // 2. Velvety Olive/Dark Scab Crust (Venturia inaequalis / Apple Scab)
+      // Olive-dark crust on apple foliage: r ~ 45-85, g ~ 38-80, b <= 55, low brightness, olive balance
       const isVelvetyScab =
         !isChloroticHalo &&
-        !isPustule &&
-        r >= 48 &&
-        r <= 105 &&
-        g >= 38 &&
-        g <= 88 &&
-        b <= 60 &&
-        brightness >= 34 &&
-        brightness <= 78 &&
-        Math.abs(r - g) <= 25;
+        r >= 45 &&
+        r <= 95 &&
+        g >= 35 &&
+        g <= 85 &&
+        b <= 55 &&
+        brightness >= 28 &&
+        brightness <= 75 &&
+        g >= r * 0.70 &&
+        (r - g) <= 20;
 
-      // Water-soaked necrotic lesion (Phytophthora infestans / Late Blight)
+      // 3. Concentric Target Rings (Alternaria solani / Tomato Early Blight)
+      // Distinct Alternaria concentric spot with yellow halo context or tight brown rings
+      const isTargetRing =
+        !isVelvetyScab &&
+        (isChloroticHalo ||
+          (r >= 65 && r <= 110 && g >= 40 && g <= 75 && b <= 45 && (r - g) >= 15 && Math.abs(r - g * 1.35) < 14));
+
+      // 4. Rust Pustules (Puccinia sorghi / Corn Common Rust):
+      // Must be vivid, eruptive cinnamon/brick-red blisters with high red dominance and orange hue
+      const isPustule =
+        !isChloroticHalo &&
+        !isVelvetyScab &&
+        r >= 95 &&
+        b <= 75 &&
+        r >= g * 1.25 &&
+        r >= b * 1.50 &&
+        (r - g) >= 18 &&
+        (r - b) >= 30 &&
+        s >= 0.32 &&
+        (h <= 45 || h >= 345);
+
+      // 5. Water-Soaked Necrotic Lesion (Phytophthora infestans / Potato Late Blight)
+      // Dark brown to collapsed blackish water-soaked patch with low brightness
       const isWaterSoaked =
         !isPustule &&
         !isVelvetyScab &&
-        brightness >= 20 &&
-        brightness <= 55 &&
-        r >= 24 &&
-        g >= 22 &&
-        b <= 48 &&
-        (r > b + 2 || g > b + 2);
+        brightness >= 16 &&
+        brightness <= 62 &&
+        r >= 20 &&
+        g >= 18 &&
+        b <= 52 &&
+        (r > b || g > b);
 
       const isFrogeye =
         brightness >= 110 &&
@@ -248,13 +257,21 @@ export function extractFeatureVectorFromPixels(
         Math.abs(r - g) <= 12 &&
         Math.abs(g - b) <= 12;
 
-      if (isPustule) rustPustuleCount++;
-      if (isChloroticHalo) chloroticHaloCount++;
-      if (isTargetRing && chloroticHaloCount > 0) targetRingCount++;
-      if (isWaterSoaked) waterSoakedCount++;
-      if (isVelvetyScab) velvetyScabCount++;
-      if (isFrogeye) frogeyeCount++;
-      if (isPowdery) powderyCount++;
+      if (isChloroticHalo) {
+        chloroticHaloCount++;
+      } else if (isVelvetyScab) {
+        velvetyScabCount++;
+      } else if (isTargetRing) {
+        targetRingCount++;
+      } else if (isPustule) {
+        rustPustuleCount++;
+      } else if (isWaterSoaked) {
+        waterSoakedCount++;
+      } else if (isFrogeye) {
+        frogeyeCount++;
+      } else if (isPowdery) {
+        powderyCount++;
+      }
 
       // Horizontal gradient texture energy
       if (x > 0) {
