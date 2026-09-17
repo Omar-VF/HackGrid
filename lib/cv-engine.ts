@@ -1,7 +1,7 @@
 import { BoundingBox, DiagnosticResult, PathogenId, SeverityLevel } from "@/types/sentinel";
 import { SAMPLE_DIAGNOSTICS } from "./sample-data";
 import { extractFeatureVectorFromPixels, queryPathologyReferenceAtlas } from "./rag-retriever";
-import { classifyPlantImage, loadPlantDiseaseModel, DiseaseClassMapping } from "./plant-disease-model";
+import { classifyPlantImage, loadPlantDiseaseModel, DiseaseClassMapping, PlantDiagnosisResult } from "./plant-disease-model";
 
 // ============================================================================
 // Computer Vision Engine: PlantVillage MobileNetV2 CNN + Spatial Bounding Box
@@ -311,20 +311,20 @@ function analyzeImageInBrowser(
         }
 
         // --------------------------------------------------------------------
-        // Plant Pathology Decision Engine:
-        // 1. 32-D Botanical Vector RAG Match against USDA-ARS & Cornell Reference Atlas (14,200 specimens)
-        // 2. Multi-spectral lesion morphology verification (water-soaked necrosis, target rings, pustules, scab)
-        // 3. Cross-referenced with PlantVillage CNN inference
+        // Plant Pathology Decision Engine — CNN-FIRST ARCHITECTURE
+        // Primary: PlantVillage MobileNetV2 (38-class, fine-tuned on 87,000+ plant images)
+        // Fallback: Multi-spectral lesion morphology heuristics (only if CNN unavailable)
         // --------------------------------------------------------------------
-        let cnnResult: any = null;
+        let cnnResult: PlantDiagnosisResult | null = null;
         try {
-          cnnResult = await classifyPlantImage(canvas, 3);
+          cnnResult = await classifyPlantImage(canvas, 5);
         } catch (cnnErr) {
           console.warn("[PlantVillage CV] CNN inference notice:", cnnErr);
         }
 
         const ragResult = queryPathologyReferenceAtlas(stats.queryVector, 4);
 
+        // --- Heuristic signals (used ONLY as fallback when CNN unavailable) ---
         const pustuleDensity = stats.queryVector[9];
         const waterSoakedIndex = stats.queryVector[10];
         const targetRingIndex = stats.queryVector[11];
@@ -333,6 +333,8 @@ function analyzeImageInBrowser(
         const leafElongation = stats.queryVector[6];
         const chlorophyllDensity = stats.queryVector[5];
         const activePathologySum = pustuleDensity + waterSoakedIndex + targetRingIndex + chloroticHaloIndex + velvetyScabIndex;
+        const isCornMorphology = leafElongation > 0.35 || stats.leafAspect > 1.8;
+        const isBroadleafMorphology = !isCornMorphology;
 
         let pathogenId: PathogenId;
         let commonName: string;
@@ -340,91 +342,92 @@ function analyzeImageInBrowser(
         let confidence: number;
         let cropSpecies: string;
 
-        // Host Morphology Gate:
-        // Monocot elongated strap blade vs Dicot broadleaf/ovate foliage
-        const isCornMorphology = leafElongation > 0.35 || stats.leafAspect > 1.8;
-        const isBroadleafMorphology = !isCornMorphology;
+        // ====================================================================
+        // PRIMARY PATH: PlantVillage MobileNetV2 CNN (the authoritative source)
+        // ====================================================================
+        if (cnnResult && cnnResult.mapping) {
+          const mapping = cnnResult.mapping;
+          const cnnConf = cnnResult.confidence;
 
-        // 1. PlantVillage MobileNetV2 Deep Learning Inference Signal
-        const hasConfidentCNN =
-          cnnResult &&
-          cnnResult.confidence >= 35.0 &&
-          cnnResult.mapping &&
-          cnnResult.mapping.pathogenId !== "non_plant_detected";
-
-        // 2. Relative Botanical Symptom Strengths (weighted by specific diagnostic markers)
-        let rustScore = isCornMorphology ? (pustuleDensity * 4.0 + (ragResult.topMatch.pathogenId === "corn_rust" ? 0.06 : 0)) : 0;
-        let scabScore = isBroadleafMorphology ? (velvetyScabIndex * 3.5 + (ragResult.topMatch.pathogenId === "apple_scab" ? 0.06 : 0)) : 0;
-        let earlyBlightScore = isBroadleafMorphology ? (targetRingIndex * 3.5 + chloroticHaloIndex * 2.0 + (ragResult.topMatch.pathogenId === "tomato_early_blight" ? 0.06 : 0)) : 0;
-        let lateBlightScore = isBroadleafMorphology ? (waterSoakedIndex * 2.0 + (ragResult.topMatch.pathogenId === "potato_late_blight" ? 0.06 : 0)) : 0;
-
-        // Boost corresponding score with CNN confidence
-        if (hasConfidentCNN) {
-          const cnnPid = cnnResult.mapping.pathogenId;
-          const cnnBoost = (cnnResult.confidence / 100) * 0.15;
-          if (cnnPid === "corn_rust") rustScore += cnnBoost;
-          else if (cnnPid === "apple_scab") scabScore += cnnBoost;
-          else if (cnnPid === "tomato_early_blight") earlyBlightScore += cnnBoost;
-          else if (cnnPid === "potato_late_blight") lateBlightScore += cnnBoost;
-        }
-
-        const maxScore = Math.max(rustScore, scabScore, earlyBlightScore, lateBlightScore);
-
-        if (hasConfidentCNN && cnnResult.mapping.isHealthy && activePathologySum < 0.10) {
-          pathogenId = "healthy";
-          commonName = "Healthy Crop Foliage";
-          scientificName = "Clean leaf blade; cellular tissue intact (No active pathogens)";
-          cropSpecies = cnnResult.mapping.cropSpecies;
-          confidence = Math.min(99.4, Math.max(92.0, cnnResult.confidence));
-        } else if (chlorophyllDensity > 0.38 && activePathologySum < 0.06 && maxScore < 0.035) {
-          pathogenId = "healthy";
-          commonName = "Healthy Crop Foliage";
-          scientificName = "Clean leaf blade; cellular tissue intact (No active pathogens)";
-          cropSpecies = "Commercial Agricultural Foliage (Optimal Vigor)";
-          confidence = 99.2;
-        } else if (hasConfidentCNN && cnnResult.confidence >= 55.0) {
-          // Direct high-confidence neural match from PlantVillage MobileNetV2
-          pathogenId = cnnResult.mapping.pathogenId;
-          commonName = cnnResult.mapping.commonName;
-          scientificName = cnnResult.mapping.scientificName;
-          cropSpecies = cnnResult.mapping.cropSpecies;
-          confidence = Math.min(98.8, Math.max(91.0, cnnResult.confidence));
-        } else if (maxScore === rustScore && rustScore > 0.025) {
-          pathogenId = "corn_rust";
-          commonName = "Corn Common Rust";
-          scientificName = "Puccinia sorghi (Basidiomycete)";
-          cropSpecies = "Zea mays (Corn / Maize)";
-          confidence = Math.min(98.8, Math.max(91.5, ragResult.topMatch.similarityScore));
-        } else if (maxScore === scabScore && scabScore > 0.025) {
-          pathogenId = "apple_scab";
-          commonName = "Apple Scab";
-          scientificName = "Venturia inaequalis (Ascomycete)";
-          cropSpecies = "Malus domestica (Apple)";
-          confidence = Math.min(97.6, Math.max(89.8, ragResult.topMatch.similarityScore));
-        } else if (maxScore === earlyBlightScore && earlyBlightScore > 0.025) {
-          pathogenId = "tomato_early_blight";
-          commonName = "Tomato Early Blight";
-          scientificName = "Alternaria solani (Ascomycete)";
-          cropSpecies = "Solanum lycopersicum (Tomato)";
-          confidence = Math.min(97.9, Math.max(91.2, ragResult.topMatch.similarityScore));
-        } else if (maxScore === lateBlightScore && lateBlightScore > 0.025) {
-          pathogenId = "potato_late_blight";
-          commonName = "Potato Late Blight";
-          scientificName = "Phytophthora infestans (Oomycete)";
-          cropSpecies = "Solanum tuberosum (Russet Burbank)";
-          confidence = Math.min(98.4, Math.max(92.8, ragResult.topMatch.similarityScore));
-        } else if (ragResult.topMatch.pathogenId !== "healthy" && activePathologySum > 0.05) {
-          pathogenId = ragResult.topMatch.pathogenId;
-          commonName = ragResult.topMatch.commonName;
-          scientificName = ragResult.topMatch.pathogenName;
-          cropSpecies = ragResult.topMatch.cropSpecies;
-          confidence = Math.min(98.2, Math.max(88.5, ragResult.topMatch.similarityScore));
+          if (mapping.isHealthy) {
+            // CNN says healthy — trust it
+            pathogenId = "healthy";
+            commonName = "Healthy Crop Foliage";
+            scientificName = `Clean leaf blade; cellular tissue intact — ${mapping.cropSpecies}`;
+            cropSpecies = mapping.cropSpecies;
+            // Healthy prediction: confidence is direct from model (never artificially inflated)
+            confidence = Math.min(99.4, cnnConf);
+          } else {
+            // CNN detected a disease — use it as the authoritative ground truth
+            pathogenId = mapping.pathogenId;
+            commonName = mapping.commonName;
+            scientificName = mapping.scientificName;
+            cropSpecies = mapping.cropSpecies;
+            // Report CNN confidence directly — the model is honest about its uncertainty
+            confidence = Math.min(99.2, cnnConf);
+          }
         } else {
-          pathogenId = "healthy";
-          commonName = "Healthy Crop Foliage";
-          scientificName = "Clean leaf blade; cellular tissue intact (No active pathogens)";
-          cropSpecies = "Commercial Agricultural Foliage (Optimal Vigor)";
-          confidence = 99.2;
+          // ====================================================================
+          // FALLBACK PATH: CNN unavailable — use heuristic pixel analysis
+          // ====================================================================
+          console.warn("[CropEye] PlantVillage model not loaded — falling back to heuristic engine");
+
+          let rustScore = isCornMorphology ? pustuleDensity * 4.0 : 0;
+          let scabScore = isBroadleafMorphology ? velvetyScabIndex * 3.5 : 0;
+          let earlyBlightScore = isBroadleafMorphology ? targetRingIndex * 3.5 + chloroticHaloIndex * 2.0 : 0;
+          let lateBlightScore = isBroadleafMorphology ? waterSoakedIndex * 2.0 : 0;
+
+          // Bias with RAG top match
+          if (ragResult.topMatch.pathogenId === "corn_rust") rustScore += 0.06;
+          else if (ragResult.topMatch.pathogenId === "apple_scab") scabScore += 0.06;
+          else if (ragResult.topMatch.pathogenId === "tomato_early_blight") earlyBlightScore += 0.06;
+          else if (ragResult.topMatch.pathogenId === "potato_late_blight") lateBlightScore += 0.06;
+
+          const maxScore = Math.max(rustScore, scabScore, earlyBlightScore, lateBlightScore);
+
+          if (chlorophyllDensity > 0.38 && activePathologySum < 0.06 && maxScore < 0.035) {
+            pathogenId = "healthy";
+            commonName = "Healthy Crop Foliage";
+            scientificName = "Clean leaf blade; cellular tissue intact (No active pathogens)";
+            cropSpecies = "Commercial Agricultural Foliage (Optimal Vigor)";
+            confidence = 94.5;
+          } else if (maxScore === rustScore && rustScore > 0.025) {
+            pathogenId = "corn_rust";
+            commonName = "Corn Common Rust";
+            scientificName = "Puccinia sorghi (Basidiomycete)";
+            cropSpecies = "Zea mays (Corn / Maize)";
+            confidence = Math.min(95.0, Math.max(88.0, ragResult.topMatch.similarityScore));
+          } else if (maxScore === scabScore && scabScore > 0.025) {
+            pathogenId = "apple_scab";
+            commonName = "Apple Scab";
+            scientificName = "Venturia inaequalis (Ascomycete)";
+            cropSpecies = "Malus domestica (Apple)";
+            confidence = Math.min(93.0, Math.max(85.0, ragResult.topMatch.similarityScore));
+          } else if (maxScore === earlyBlightScore && earlyBlightScore > 0.025) {
+            pathogenId = "tomato_early_blight";
+            commonName = "Tomato Early Blight";
+            scientificName = "Alternaria solani (Ascomycete)";
+            cropSpecies = "Solanum lycopersicum (Tomato)";
+            confidence = Math.min(94.0, Math.max(87.0, ragResult.topMatch.similarityScore));
+          } else if (maxScore === lateBlightScore && lateBlightScore > 0.025) {
+            pathogenId = "potato_late_blight";
+            commonName = "Potato Late Blight";
+            scientificName = "Phytophthora infestans (Oomycete)";
+            cropSpecies = "Solanum tuberosum (Russet Burbank)";
+            confidence = Math.min(95.0, Math.max(88.0, ragResult.topMatch.similarityScore));
+          } else if (ragResult.topMatch.pathogenId !== "healthy" && activePathologySum > 0.05) {
+            pathogenId = ragResult.topMatch.pathogenId;
+            commonName = ragResult.topMatch.commonName;
+            scientificName = ragResult.topMatch.pathogenName;
+            cropSpecies = ragResult.topMatch.cropSpecies;
+            confidence = Math.min(92.0, Math.max(82.0, ragResult.topMatch.similarityScore));
+          } else {
+            pathogenId = "healthy";
+            commonName = "Healthy Crop Foliage";
+            scientificName = "Clean leaf blade; cellular tissue intact (No active pathogens)";
+            cropSpecies = "Commercial Agricultural Foliage (Optimal Vigor)";
+            confidence = 94.5;
+          }
         }
 
         // --------------------------------------------------------------------

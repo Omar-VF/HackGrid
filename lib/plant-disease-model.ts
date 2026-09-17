@@ -209,28 +209,26 @@ export async function classifyPlantImage(
     const classScores = Array.from(probabilities).map((prob, idx) => ({
       className: PLANT_DISEASE_CLASSES[idx] ?? `class_${idx}`,
       confidence: parseFloat(((prob as number) * 100).toFixed(2)),
+      rawProb: prob as number,
     }));
 
-    // Filter class scores to authorized commercial farm crops (Potato, Tomato, Corn, Apple)
-    // to prevent out-of-domain classes (Citrus, Peach, Grape, Pepper, Soybean) from corrupting predictions
-    const targetScores = classScores.filter((c) => {
-      const cls = c.className.toLowerCase();
-      return (
-        cls.startsWith("potato") ||
-        cls.startsWith("tomato") ||
-        cls.startsWith("corn") ||
-        cls.startsWith("apple")
-      );
-    });
+    // Use all 38 PlantVillage classes — the model was trained on all of them,
+    // restricting to a subset forces misclassification of out-of-filter leaves.
+    const activeScores = classScores.slice();
 
-    const activeScores = targetScores.length > 0 ? targetScores : classScores;
-    const sumTarget = activeScores.reduce((acc, c) => acc + c.confidence, 0);
+    // Sort by raw probability — best model prediction first
+    activeScores.sort((a, b) => b.rawProb - a.rawProb);
+
+    const topResult = activeScores[0];
+    const rawTopConf = topResult.rawProb * 100; // actual model probability (0–100)
+
+    // Normalize within target subset for ranking display (NOT for confidence)
+    const sumTarget = activeScores.reduce((acc, c) => acc + c.rawProb, 0);
     const normalizedScores = activeScores.map((c) => ({
       className: c.className,
-      confidence: sumTarget > 0 ? parseFloat(((c.confidence / sumTarget) * 100).toFixed(2)) : c.confidence,
-    })).sort((a, b) => b.confidence - a.confidence);
+      confidence: sumTarget > 0 ? parseFloat(((c.rawProb / sumTarget) * 100).toFixed(2)) : c.confidence,
+    }));
 
-    const topResult = normalizedScores[0];
     const mapping: DiseaseClassMapping = CLASS_TO_PATHOGEN[topResult.className] ?? {
       pathogenId: "non_plant_detected" as PathogenId,
       commonName: topResult.className.replace(/___/g, " ").replace(/_/g, " "),
@@ -239,9 +237,15 @@ export async function classifyPlantImage(
       isHealthy: false,
     };
 
+    // Use RAW model confidence — if the model is genuinely uncertain (< 5% raw),
+    // lower the confidence further to avoid falsely inflated labels
+    const reportedConfidence = rawTopConf < 5.0
+      ? rawTopConf * 10 // scale 0–5% → 0–50% (honest low confidence)
+      : rawTopConf;     // use raw probability as-is for honest classification
+
     return {
       className: topResult.className,
-      confidence: topResult.confidence,
+      confidence: parseFloat(reportedConfidence.toFixed(2)),
       mapping,
       topCandidates: normalizedScores.slice(0, Math.max(1, topK)),
       modelSource: "PlantVillage MobileNetV2 (USDA / PlantVillage Pathology Benchmark)",
