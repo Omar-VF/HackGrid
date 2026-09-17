@@ -337,7 +337,11 @@ function analyzeImageInBrowser(
         const leafElongation = stats.queryVector[6];
         const chlorophyllDensity = stats.queryVector[5];
         const activePathologySum = pustuleDensity + waterSoakedIndex + targetRingIndex + chloroticHaloIndex + velvetyScabIndex;
-        const isCornMorphology = leafElongation > 0.35 || stats.leafAspect > 1.8;
+        // isCornMorphology: use CNN class label first (most reliable), then pixel aspect as fallback.
+        // The PlantVillage model was trained on 87K labeled crop images — if it says Corn_(maize),
+        // we trust that signal over a simple pixel aspect ratio heuristic.
+        const cnnSaysCorn = cnnResult?.isCornClass === true;
+        const isCornMorphology = cnnSaysCorn || leafElongation > 0.35 || stats.leafAspect > 1.8;
         const isBroadleafMorphology = !isCornMorphology;
 
         let pathogenId: PathogenId;
@@ -349,9 +353,12 @@ function analyzeImageInBrowser(
         // ====================================================================
         // BALANCED PATHOLOGY ENSEMBLE: CNN + 32-D RAG ATLAS + LESION MORPHOLOGY
         // ====================================================================
+        // hasConfidentCNN: gate on rawTopProb (true softmax output, 0-1 scale) rather than
+        // the renormalized confidence percentage, which can be inflated by sub-pool size.
+        // Threshold: rawTopProb >= 0.15 means the model is genuinely confident in this class.
         const hasConfidentCNN =
           cnnResult &&
-          cnnResult.confidence >= 35.0 &&
+          cnnResult.rawTopProb >= 0.15 &&
           cnnResult.mapping &&
           cnnResult.mapping.pathogenId !== "non_plant_detected";
 
@@ -388,7 +395,7 @@ function analyzeImageInBrowser(
         } else if (
           cnnResult &&
           hasConfidentCNN &&
-          cnnResult.confidence >= 55.0 &&
+          cnnResult.rawTopProb >= 0.28 &&
           ((cnnResult.mapping.pathogenId === "corn_rust" && isCornMorphology) ||
             (cnnResult.mapping.pathogenId !== "corn_rust" && isBroadleafMorphology))
         ) {

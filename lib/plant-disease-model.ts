@@ -105,7 +105,9 @@ export const CLASS_TO_PATHOGEN: Record<string, DiseaseClassMapping> = {
 
 export interface PlantDiagnosisResult {
   className: string;
-  confidence: number;
+  confidence: number;       // Normalized confidence within filtered crop pool (%)
+  rawTopProb: number;       // True softmax probability from CNN output (0-1)
+  isCornClass: boolean;     // True if the top CNN class is any Corn_(maize) class
   mapping: DiseaseClassMapping;
   topCandidates: Array<{ className: string; confidence: number }>;
   modelSource: string;
@@ -227,27 +229,46 @@ export async function classifyPlantImage(
       rawProb: prob as number,
     }));
 
-    // Filter class scores to authorized commercial farm crops (Potato, Tomato, Corn, Apple)
-    // to prevent out-of-domain classes (Citrus, Peach, Grape, Pepper, Soybean) from corrupting predictions
-    const targetScores = classScores.filter((c) => {
-      const cls = c.className.toLowerCase();
-      return (
-        cls.startsWith("potato") ||
-        cls.startsWith("tomato") ||
-        cls.startsWith("corn") ||
-        cls.startsWith("apple")
-      );
-    });
+    // -----------------------------------------------------------------------
+    // Step 1: Sort ALL 38 classes by raw softmax probability descending.
+    //         Use raw probabilities for ranking — this is the true CNN signal.
+    // -----------------------------------------------------------------------
+    classScores.sort((a, b) => b.rawProb - a.rawProb);
 
+    // Step 2: Find the top-ranked class within our 4 authorized commercial crops
+    //         (Potato, Tomato, Corn, Apple). This prevents out-of-domain classes
+    //         (Citrus, Grape, etc.) from becoming the final answer.
+    const targetClasses = ["potato", "tomato", "corn", "apple"];
+    const topTarget = classScores.find((c) =>
+      targetClasses.some((crop) => c.className.toLowerCase().startsWith(crop))
+    );
+
+    // Step 3: The winning class is the highest-raw-probability authorized class.
+    //         If none found, fall back to the overall top class (edge case).
+    const topResult = topTarget ?? classScores[0];
+
+    // Step 4: Compute confidence as a percentage of the FULL 38-class probability
+    //         mass — i.e. the true softmax confidence, not inflated by sub-pool
+    //         renormalization. This ensures corn_rust at 0.40 raw beats apple_scab
+    //         at 0.35 raw accurately instead of apple_scab appearing more confident
+    //         after renormalization across a larger apple+tomato class pool.
+    const totalAllProbs = classScores.reduce((acc, c) => acc + c.rawProb, 0);
+    const trueConfidence = totalAllProbs > 0
+      ? parseFloat(((topResult.rawProb / totalAllProbs) * 100).toFixed(2))
+      : topResult.confidence;
+
+    // Step 5: Compute normalized top-K candidates within target classes for display
+    const targetScores = classScores.filter((c) =>
+      targetClasses.some((crop) => c.className.toLowerCase().startsWith(crop))
+    );
     const activeScores = targetScores.length > 0 ? targetScores : classScores;
-    activeScores.sort((a, b) => b.rawProb - a.rawProb);
-
-    const topResult = activeScores[0];
     const sumTarget = activeScores.reduce((acc, c) => acc + c.rawProb, 0);
-    const normalizedScores = activeScores.map((c) => ({
+    const normalizedScores = activeScores.slice(0, Math.max(1, topK)).map((c) => ({
       className: c.className,
       confidence: sumTarget > 0 ? parseFloat(((c.rawProb / sumTarget) * 100).toFixed(2)) : c.confidence,
     }));
+
+    const isCornClass = topResult.className.toLowerCase().startsWith("corn");
 
     const mapping: DiseaseClassMapping = CLASS_TO_PATHOGEN[topResult.className] ?? {
       pathogenId: "non_plant_detected" as PathogenId,
@@ -259,9 +280,11 @@ export async function classifyPlantImage(
 
     return {
       className: topResult.className,
-      confidence: normalizedScores[0].confidence,
+      confidence: trueConfidence,
+      rawTopProb: topResult.rawProb,
+      isCornClass,
       mapping,
-      topCandidates: normalizedScores.slice(0, Math.max(1, topK)),
+      topCandidates: normalizedScores,
       modelSource: "PlantVillage MobileNetV2 (USDA / PlantVillage Pathology Benchmark)",
     };
   } catch (err) {

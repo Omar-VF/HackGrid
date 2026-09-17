@@ -32,22 +32,22 @@ export default function Navbar({ currentRoute = 'landing' }: NavbarProps) {
         {/* Center Navigation Links */}
         <nav className="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
           <Link
-            href="/#autonomous-engine"
+            href="/#pipeline"
             className="transition hover:text-agri-600 hover:underline underline-offset-4"
           >
-            Autonomous Engine
+            Autonomous Pipeline
           </Link>
           <Link
-            href="/#telemetry-standard"
+            href="/#metrics"
             className="transition hover:text-agri-600 hover:underline underline-offset-4"
           >
-            Field Telemetry
+            Impact &amp; Metrics
           </Link>
           <Link
             href="/#pricing"
             className="transition hover:text-agri-600 hover:underline underline-offset-4"
           >
-            Agronomic ROI
+            Pricing
           </Link>
           <Link
             href="/business"
