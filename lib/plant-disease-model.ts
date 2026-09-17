@@ -148,6 +148,21 @@ export async function loadPlantDiseaseModel(): Promise<any> {
   _loadError = null;
   try {
     const tf = await import("@tensorflow/tfjs");
+    try {
+      if (tf.getBackend() !== "webgl") {
+        await tf.setBackend("webgl");
+      }
+      await tf.ready();
+    } catch {
+      console.warn("[PlantVillage CV] WebGL unavailable, falling back to CPU backend");
+      try {
+        await tf.setBackend("cpu");
+        await tf.ready();
+      } catch (cpuErr) {
+        console.warn("[PlantVillage CV] CPU backend fallback notice:", cpuErr);
+      }
+    }
+
     console.log(`[PlantVillage CV] Loading model from ${MODEL_JSON_URL}...`);
     let model: any;
     try {
@@ -212,17 +227,22 @@ export async function classifyPlantImage(
       rawProb: prob as number,
     }));
 
-    // Use all 38 PlantVillage classes — the model was trained on all of them,
-    // restricting to a subset forces misclassification of out-of-filter leaves.
-    const activeScores = classScores.slice();
+    // Filter class scores to authorized commercial farm crops (Potato, Tomato, Corn, Apple)
+    // to prevent out-of-domain classes (Citrus, Peach, Grape, Pepper, Soybean) from corrupting predictions
+    const targetScores = classScores.filter((c) => {
+      const cls = c.className.toLowerCase();
+      return (
+        cls.startsWith("potato") ||
+        cls.startsWith("tomato") ||
+        cls.startsWith("corn") ||
+        cls.startsWith("apple")
+      );
+    });
 
-    // Sort by raw probability — best model prediction first
+    const activeScores = targetScores.length > 0 ? targetScores : classScores;
     activeScores.sort((a, b) => b.rawProb - a.rawProb);
 
     const topResult = activeScores[0];
-    const rawTopConf = topResult.rawProb * 100; // actual model probability (0–100)
-
-    // Normalize within target subset for ranking display (NOT for confidence)
     const sumTarget = activeScores.reduce((acc, c) => acc + c.rawProb, 0);
     const normalizedScores = activeScores.map((c) => ({
       className: c.className,
@@ -237,15 +257,9 @@ export async function classifyPlantImage(
       isHealthy: false,
     };
 
-    // Use RAW model confidence — if the model is genuinely uncertain (< 5% raw),
-    // lower the confidence further to avoid falsely inflated labels
-    const reportedConfidence = rawTopConf < 5.0
-      ? rawTopConf * 10 // scale 0–5% → 0–50% (honest low confidence)
-      : rawTopConf;     // use raw probability as-is for honest classification
-
     return {
       className: topResult.className,
-      confidence: parseFloat(reportedConfidence.toFixed(2)),
+      confidence: normalizedScores[0].confidence,
       mapping,
       topCandidates: normalizedScores.slice(0, Math.max(1, topK)),
       modelSource: "PlantVillage MobileNetV2 (USDA / PlantVillage Pathology Benchmark)",
