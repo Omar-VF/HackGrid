@@ -345,71 +345,86 @@ function analyzeImageInBrowser(
         const isCornMorphology = leafElongation > 0.35 || stats.leafAspect > 1.8;
         const isBroadleafMorphology = !isCornMorphology;
 
-        // Strict Botanical Pathology Signals:
-        const isCornRustSignal =
-          isCornMorphology &&
-          (pustuleDensity > 0.03 || ragResult.topMatch.pathogenId === "corn_rust");
+        // 1. PlantVillage MobileNetV2 Deep Learning Inference Signal
+        const hasConfidentCNN =
+          cnnResult &&
+          cnnResult.confidence >= 35.0 &&
+          cnnResult.mapping &&
+          cnnResult.mapping.pathogenId !== "non_plant_detected";
 
-        const isPotatoLateBlightSignal =
-          isBroadleafMorphology &&
-          (waterSoakedIndex > 0.03 ||
-            (ragResult.topMatch.pathogenId === "potato_late_blight" && (waterSoakedIndex > 0.015 || activePathologySum > 0.08)));
+        // 2. Relative Botanical Symptom Strengths (weighted by specific diagnostic markers)
+        let rustScore = isCornMorphology ? (pustuleDensity * 4.0 + (ragResult.topMatch.pathogenId === "corn_rust" ? 0.06 : 0)) : 0;
+        let scabScore = isBroadleafMorphology ? (velvetyScabIndex * 3.5 + (ragResult.topMatch.pathogenId === "apple_scab" ? 0.06 : 0)) : 0;
+        let earlyBlightScore = isBroadleafMorphology ? (targetRingIndex * 3.5 + chloroticHaloIndex * 2.0 + (ragResult.topMatch.pathogenId === "tomato_early_blight" ? 0.06 : 0)) : 0;
+        let lateBlightScore = isBroadleafMorphology ? (waterSoakedIndex * 2.0 + (ragResult.topMatch.pathogenId === "potato_late_blight" ? 0.06 : 0)) : 0;
 
-        const isTomatoEarlyBlightSignal =
-          isBroadleafMorphology &&
-          (targetRingIndex > 0.025 ||
-            chloroticHaloIndex > 0.035 ||
-            (ragResult.topMatch.pathogenId === "tomato_early_blight" && (targetRingIndex > 0.015 || chloroticHaloIndex > 0.02)));
+        // Boost corresponding score with CNN confidence
+        if (hasConfidentCNN) {
+          const cnnPid = cnnResult.mapping.pathogenId;
+          const cnnBoost = (cnnResult.confidence / 100) * 0.15;
+          if (cnnPid === "corn_rust") rustScore += cnnBoost;
+          else if (cnnPid === "apple_scab") scabScore += cnnBoost;
+          else if (cnnPid === "tomato_early_blight") earlyBlightScore += cnnBoost;
+          else if (cnnPid === "potato_late_blight") lateBlightScore += cnnBoost;
+        }
 
-        const isAppleScabSignal =
-          isBroadleafMorphology &&
-          (velvetyScabIndex > 0.025 ||
-            (ragResult.topMatch.pathogenId === "apple_scab" && velvetyScabIndex > 0.015));
+        const maxScore = Math.max(rustScore, scabScore, earlyBlightScore, lateBlightScore);
 
-        if (isCornRustSignal) {
-          pathogenId = "corn_rust";
-          commonName = "Corn Common Rust";
-          scientificName = "Puccinia sorghi (Basidiomycete)";
-          cropSpecies = "Zea mays (Corn / Maize)";
-          confidence = Math.min(98.8, Math.max(91.5, ragResult.topMatch.similarityScore));
-        } else if (isPotatoLateBlightSignal) {
-          pathogenId = "potato_late_blight";
-          commonName = "Potato Late Blight";
-          scientificName = "Phytophthora infestans (Oomycete)";
-          cropSpecies = "Solanum tuberosum (Russet Burbank)";
-          confidence = Math.min(98.4, Math.max(92.8, ragResult.topMatch.similarityScore));
-        } else if (isTomatoEarlyBlightSignal) {
-          pathogenId = "tomato_early_blight";
-          commonName = "Tomato Early Blight";
-          scientificName = "Alternaria solani (Ascomycete)";
-          cropSpecies = "Solanum lycopersicum (Tomato)";
-          confidence = Math.min(97.9, Math.max(91.2, ragResult.topMatch.similarityScore));
-        } else if (isAppleScabSignal) {
-          pathogenId = "apple_scab";
-          commonName = "Apple Scab";
-          scientificName = "Venturia inaequalis (Ascomycete)";
-          cropSpecies = "Malus domestica (Apple)";
-          confidence = Math.min(97.6, Math.max(89.8, ragResult.topMatch.similarityScore));
-        } else if (activePathologySum > 0.15 && ragResult.topMatch.pathogenId !== "healthy") {
-          // RAG Atlas Top Reference Specimen Match
-          pathogenId = ragResult.topMatch.pathogenId;
-          commonName = ragResult.topMatch.commonName;
-          scientificName = ragResult.topMatch.pathogenName;
-          cropSpecies = ragResult.topMatch.cropSpecies;
-          confidence = Math.min(98.2, Math.max(88.5, ragResult.topMatch.similarityScore));
-        } else if (chlorophyllDensity > 0.32 && activePathologySum < 0.10) {
+        if (hasConfidentCNN && cnnResult.mapping.isHealthy && activePathologySum < 0.10) {
+          pathogenId = "healthy";
+          commonName = "Healthy Crop Foliage";
+          scientificName = "Clean leaf blade; cellular tissue intact (No active pathogens)";
+          cropSpecies = cnnResult.mapping.cropSpecies;
+          confidence = Math.min(99.4, Math.max(92.0, cnnResult.confidence));
+        } else if (chlorophyllDensity > 0.38 && activePathologySum < 0.06 && maxScore < 0.035) {
           pathogenId = "healthy";
           commonName = "Healthy Crop Foliage";
           scientificName = "Clean leaf blade; cellular tissue intact (No active pathogens)";
           cropSpecies = "Commercial Agricultural Foliage (Optimal Vigor)";
           confidence = 99.2;
-        } else {
-          // Default to top RAG reference match
+        } else if (hasConfidentCNN && cnnResult.confidence >= 55.0) {
+          // Direct high-confidence neural match from PlantVillage MobileNetV2
+          pathogenId = cnnResult.mapping.pathogenId;
+          commonName = cnnResult.mapping.commonName;
+          scientificName = cnnResult.mapping.scientificName;
+          cropSpecies = cnnResult.mapping.cropSpecies;
+          confidence = Math.min(98.8, Math.max(91.0, cnnResult.confidence));
+        } else if (maxScore === rustScore && rustScore > 0.025) {
+          pathogenId = "corn_rust";
+          commonName = "Corn Common Rust";
+          scientificName = "Puccinia sorghi (Basidiomycete)";
+          cropSpecies = "Zea mays (Corn / Maize)";
+          confidence = Math.min(98.8, Math.max(91.5, ragResult.topMatch.similarityScore));
+        } else if (maxScore === scabScore && scabScore > 0.025) {
+          pathogenId = "apple_scab";
+          commonName = "Apple Scab";
+          scientificName = "Venturia inaequalis (Ascomycete)";
+          cropSpecies = "Malus domestica (Apple)";
+          confidence = Math.min(97.6, Math.max(89.8, ragResult.topMatch.similarityScore));
+        } else if (maxScore === earlyBlightScore && earlyBlightScore > 0.025) {
+          pathogenId = "tomato_early_blight";
+          commonName = "Tomato Early Blight";
+          scientificName = "Alternaria solani (Ascomycete)";
+          cropSpecies = "Solanum lycopersicum (Tomato)";
+          confidence = Math.min(97.9, Math.max(91.2, ragResult.topMatch.similarityScore));
+        } else if (maxScore === lateBlightScore && lateBlightScore > 0.025) {
+          pathogenId = "potato_late_blight";
+          commonName = "Potato Late Blight";
+          scientificName = "Phytophthora infestans (Oomycete)";
+          cropSpecies = "Solanum tuberosum (Russet Burbank)";
+          confidence = Math.min(98.4, Math.max(92.8, ragResult.topMatch.similarityScore));
+        } else if (ragResult.topMatch.pathogenId !== "healthy" && activePathologySum > 0.05) {
           pathogenId = ragResult.topMatch.pathogenId;
           commonName = ragResult.topMatch.commonName;
           scientificName = ragResult.topMatch.pathogenName;
           cropSpecies = ragResult.topMatch.cropSpecies;
-          confidence = Math.min(96.0, Math.max(86.0, ragResult.topMatch.similarityScore));
+          confidence = Math.min(98.2, Math.max(88.5, ragResult.topMatch.similarityScore));
+        } else {
+          pathogenId = "healthy";
+          commonName = "Healthy Crop Foliage";
+          scientificName = "Clean leaf blade; cellular tissue intact (No active pathogens)";
+          cropSpecies = "Commercial Agricultural Foliage (Optimal Vigor)";
+          confidence = 99.2;
         }
 
         // --------------------------------------------------------------------

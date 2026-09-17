@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   WorkOrderTicket,
   PathogenId,
@@ -13,6 +13,8 @@ import {
   executeAutonomousWorkflow,
   getLiveWeather,
   getSimulatedHighRiskWeather,
+  calculatePrescription,
+  calculateROIEstimate,
 } from '@/lib';
 import TelemetryBar from '@/components/TelemetryBar';
 import AutonomousPipeline from '@/components/AutonomousPipeline';
@@ -32,6 +34,9 @@ export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [cycleTime, setCycleTime] = useState<string>('2.4S');
   const [isWeatherRefreshing, setIsWeatherRefreshing] = useState<boolean>(false);
+
+  // Tracks active scan sequence to prevent stale in-flight scans from overwriting newer selections
+  const scanSeqRef = useRef<number>(0);
 
   // Fetch live Open-Meteo microclimate telemetry on mount
   useEffect(() => {
@@ -66,7 +71,7 @@ export default function DashboardPage() {
   };
 
   const runAutonomousScan = async (sampleId: PathogenId, customData?: string) => {
-    if (isRunning) return;
+    const currentSeq = ++scanSeqRef.current;
     setIsRunning(true);
 
     const start = Date.now();
@@ -79,13 +84,17 @@ export default function DashboardPage() {
           acreage: 140,
           farmName: 'Oak Ridge Commercial Farm',
         },
-        stepDelayMs: 380, // Visual delay per stage for demo visualization
+        stepDelayMs: 220, // Snappy, responsive visualization delay
         onStageUpdate: (updatedStage) => {
+          if (scanSeqRef.current !== currentSeq) return;
           setStages((prev) =>
             prev.map((s) => (s.stage === updatedStage.stage ? updatedStage : s))
           );
         },
       });
+
+      // Ignore result if a newer scan was started while this one was running
+      if (scanSeqRef.current !== currentSeq) return;
 
       if (response.success) {
         setTicket(response.ticket);
@@ -94,30 +103,66 @@ export default function DashboardPage() {
     } catch (err) {
       console.error('Autonomous workflow execution error:', err);
     } finally {
-      const durationSeconds = ((Date.now() - start) / 1000).toFixed(1);
-      setCycleTime(`${durationSeconds}S`);
-      setIsRunning(false);
+      if (scanSeqRef.current === currentSeq) {
+        const durationSeconds = ((Date.now() - start) / 1000).toFixed(1);
+        setCycleTime(`${durationSeconds}S`);
+        setIsRunning(false);
+      }
     }
   };
 
   const handleSelectSample = (sampleId: PathogenId) => {
     if (sampleId in SAMPLE_DIAGNOSTICS) {
+      const newDiag = SAMPLE_DIAGNOSTICS[sampleId];
+      const newPrescription = calculatePrescription({
+        pathogenId: sampleId,
+        acreage: ticket.acreage || 140,
+        windSpeedMph: ticket.weather.windSpeedMph,
+        relativeHumidity: ticket.weather.relativeHumidity,
+      });
+      const { estimatedCropSavedUsd, chemicalSavingsPct } = calculateROIEstimate(
+        sampleId,
+        ticket.acreage || 140
+      );
+
+      // Instantly update ticket state so UI reflects new image, labels, and medicine without delay
       setTicket((prev) => ({
         ...prev,
-        diagnostic: SAMPLE_DIAGNOSTICS[sampleId],
+        diagnostic: newDiag,
+        prescription: newPrescription,
+        estimatedCropSavedUsd,
+        chemicalSavingsPct,
       }));
     }
     runAutonomousScan(sampleId);
   };
 
   const handleCustomImageCapture = (imageDataUrl: string) => {
+    // Immediately clear previous diagnostic & prescription to indicate fresh analysis
     setTicket((prev) => ({
       ...prev,
       diagnostic: {
-        ...prev.diagnostic,
+        pathogenId: 'potato_late_blight',
+        commonName: 'Analyzing Foliar Specimen...',
+        scientificName: 'Extracting 32-D Botanical Vector & Spectral Signature...',
+        confidence: 0,
+        necrosisPercentage: 0,
+        severityLevel: 'LOW',
         imageUrl: imageDataUrl,
+        scannedAt: new Date().toISOString(),
         boundingBoxes: [],
         foliarMaskUrl: undefined,
+      },
+      prescription: {
+        chemicalName: 'Formulating EPA Prescription...',
+        epaRegNumber: 'EPA Verification In Progress',
+        activeIngredient: 'Pending CV Pathology Classification',
+        dosagePerAcre: 'Calculating...',
+        waterVolumePerAcre: 'Calculating...',
+        safeToSpray: true,
+        windBufferNotice: 'Checking Open-Meteo live anemometer threshold...',
+        totalChemicalVolume: 'Calculating...',
+        estimatedChemicalCostUsd: 0,
       },
     }));
     runAutonomousScan('potato_late_blight', imageDataUrl);
